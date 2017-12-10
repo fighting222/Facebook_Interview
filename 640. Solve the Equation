@@ -1,0 +1,82 @@
+题目：640. Solve the Equation
+/**
+Solve a given equation and return the value of x in the form of string "x=#value". The equation contains only '+', '-' operation, the variable x and its coefficient.
+
+If there is no solution for the equation, return "No solution".
+
+If there are infinite solutions for the equation, return "Infinite solutions".
+
+If there is exactly one solution for the equation, we ensure that the value of x is an integer.
+*/
+
+
+//Method1: Partioning Coefficient, time = O(n), space = O(n)
+//time分析：Generating coefficients and findinn lhs and rhswill take O(n).
+//space分析： ArrayList resres size can grow upto n.
+/**思路：
+1. splitting the given equation based on "=" sign -> make equation become ax = b 
+步骤: 1) every "x" in the left hand side of the given equation is treated as Positive, while that on the right hand side is treated as negative 
+    2) number on the left hand side is treated as negative, while that one the right hand side is treated as Positive 
+2. find "x"'s corresponding coeddicients on the left hand side, and find final effective number on the right hand side 
+3.三种解的情况
+1）Unique Solution: the ratio of the effective "rhs" and "lhs" gives the required result
+2) Infinite Solution: 例如“x = x” -> both the effective "lhs" and "rhs" turns out to be 0，例子:"x + 1 = x + 1"
+3) No Solution: the coefficient of "x"(lhs) turns out to be 0, but the effective number on the "rhs" is non-zero。x系数是0，数字!= 0
+*/
+class Solution {
+    public String solveEquation(String equation) {
+        String[] lr = equation.split("=");  //split the equation to left side and right side
+        int lhs = 0, rhs = 0;
+        for (String x : breakIt(lr[0])) {  //先对等号左边进行处理
+            if (x.indexOf("x") >= 0) {  //将"系数x"分出来
+                lhs += Integer.parseInt(coeff(x));  //convert x的系数to integer
+            } else {  //不是x，是number
+                rhs -= Integer.parseInt(x);  //number on the left hand side is treated as negative
+            }
+        }
+        //对等号右边进行处理
+        for (String x : breakIt(lr[1])) {
+            if (x.indexOf("x") >= 0) {
+                lhs -= Integer.parseInt(coeff(x));  //every x 系数right hand side is treated as negative 
+            } else {
+                rhs += Integer.parseInt(x); //one the right hand side is treated as Positive
+            }
+        }
+        
+        //Infinite solutions和No solution情况
+        if (lhs == 0) {
+            if (rhs == 0) {
+                return "Infinite solutions";  //Infinite Solution -> lhs = 0, rhs = 0
+            } else {
+                return "No solution";  // lhs = 0, rhs != 0
+            }
+        }
+        
+        return "x=" + rhs / lhs;
+    }
+    
+    public List<String> breakIt(String s) {
+        List<String> res = new ArrayList<>();
+        String r = "";
+        for (int i = 0; i < s.length(); ++i) {
+            if (s.charAt(i) == '+' || s.charAt(i) == '-') {
+                if (r.length() > 0) {
+                    res.add(r);
+                }
+                r = "" + s.charAt(i);
+            } else {
+                r += s.charAt(i);
+            }
+        }
+        res.add(r);
+        return res;
+    }
+    
+    public String coeff(String x) {
+        //x前面的系数不是1
+        if (x.length() > 1 && x.charAt(x.length() - 2) >= '0' && x.charAt(x.length() - 2) <= '9') {
+            return x.replace("x", "");
+        }
+        return x.replace("x", "1");  //系数是1
+    }
+}
