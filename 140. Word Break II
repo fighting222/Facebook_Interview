@@ -1,0 +1,101 @@
+//DFS + Memorization, 不能用DP，DP只能回答true / false
+//time = O(n^2), space = O(n^2) 
+class Solution {
+    public List<String> wordBreak(String s, List<String> wordDict) {
+        List<String> results = new LinkedList<>();  //store results
+        HashSet<String> set = new HashSet<>();   // store dictionary 
+        //思路：1. use HashMap to save the previous results to prune duplicated branches
+        //key store the current string, value stores all the sentences which can be formed by current string. eg. String = abcdef, value store all partition results of abcdef.所以，Thus, if we encounter the same starting from different function calls, we can return the result directly from the hashmap rather than going for redundant function calls.
+//2. Use a HashSet to store the dirctionary
+        HashMap<String, List<String>> used = new HashMap<String, List<String>>();   //optimize duplicate calculations避免重复计算
+        
+        for (String str : wordDict) {  //put worDict into hashSet
+            set.add(str);
+        }
+        
+        results = helper(s, set, used);
+        return results;
+    }
+    
+    private List<String> helper(String s, HashSet<String> set,
+                               HashMap<String, List<String>> used) {
+        
+        if (used.containsKey(s)) {   //Optimize performance，处理遇到重复字符串：例如abcdef, a break, b break,后面处理cdef，但是当我们break ab作为一个整体式，cdef已经处理过，就可以用map中储存过的结果
+            return used.get(s);  //已经处理过当前的sub s，就直接return结果
+        }
+        
+        //以s = "abcdef"为例
+        if (s.length() == 0) {   //递归出口：空string
+            return null;  //当递归到f的后面，是一个空"",结束，返回null
+        } 
+        
+        List<String> results = new LinkedList<>();
+        for (int i = 1; i <= s.length(); ++i) { //从长度为1的substring开始看起，先看a
+            String sub = s.substring(0, i);    //长度为i的sub，substring(int startIndex, int endIndex)，如果sub(i)在Dict中，在对他后面的部分进行helper调用
+            List<String> partRest = null;  //rest string need to parsed 
+            if (set.contains(sub)) {    //wordDict里面有sub(a), 就可以parse "bcdef"
+                partRest = helper(s.substring(i), set, used);  //substing(int startIndex)
+                if (partRest == null) {  //如果rest need to be parse = null meansthat we already parsed the entire string
+                    results.add(sub);   //partRest都已经parse完
+                } else {   //partRest还能继续break
+                    for (String str : partRest) {
+                        results.add(sub + " " + str);
+                    }
+                }
+            }
+        }
+        used.put(s, results);
+        return results;
+    }
+}
+
+
+//Method2: Backing, time = O(n^2), space = O(n^2), !!!!!!注意input不一样 worDict是Set<String>
+/**思路：
+我们从第一个字母开始，遍历字典，看从第一个字母开始能组成哪个在字典里的词，如果找到一个，就在这个词的结束位置下一个字母处，建立一个列表，
+记录下这个词（保存到一个列表的数组）。当遍历完这个词典并找出所有以第一个字母开头的词以后，我们进入下一轮搜索。下一轮搜索只在之前找到的词的后面位置开始，
+如果这个位置不是一个词的下一个字母位置，我们就跳过。这样我们相当于构建了一个树（实际上是列表数组），
+每个找到的词都是这个树的一个分支。有了这个“树”，然后我们再用深度优先搜索，把路径加到结果当中就行了。
+
+c
+a
+t -- cat         *              *
+s -- cats        |              |
+a               cats          cat
+n                 \            /
+d -- and, sand     \          /
+d                   and    sand
+o                    \      /
+g -- dog              \    /
+                        dog
+  
+注意
+在backtracking的时候不用考虑下标超界（小于0）的情况，直接将所有到0的都加入结果就行了，因为我们在建这个路径时，就是从0开始建的，不可能超界。
+*/
+class Solution {
+    public List<String> res = new LinkedList<String>();
+    
+    public List<String> wordBreak(String s, Set<String> wordDict) {
+        List<String> dp[] = new ArrayList[s.length()+1];
+        dp[0] = new ArrayList<String>();
+        for(int i = 0; i < s.length(); i++){
+            // 只在单词的后一个字母开始寻找，否则跳过
+            if(dp[i]==null) continue;
+            // 看从当前字母开始能组成哪个在字典里的词
+            for(String word : wordDict){
+                int len = word.length();
+                if(i + len > s.length()) continue;
+                String sub = s.substring(i, i+len);
+                if(word.equals(sub)){
+                    if(dp[i + len] == null){
+                        dp[i + len] = new ArrayList<String>();
+                    }
+                    dp[i + len].add(word);
+                }
+            }
+        }
+        // 如果数组末尾不存在单词，说明找不到分解方法
+        if(dp[s.length()]!=null) backTrack(dp, s.length(), new ArrayList<String>());
+        return res;
+    }
+}
