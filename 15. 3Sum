@@ -1,0 +1,187 @@
+//!!!!!做题之前要问的问题！！！
+//1. solution can be any order?
+//2. use element once?
+/** 5种变形
+Method1 - 1: Two Pointer + Sort: 简单写法
+Method1-2: Two Pointer + Sort: 写法复杂一些
+Method3: HashTable without Sort, NO 没有duplicates and each element can be used Only once & unique result.
+Method4: HashTable withour Sort, Each element can be used for any time可以使用很多次 & Unique result
+Method5: Two Pointer + Sort: Each element can be used for any time可以使用很多次 & Unique result
+*/
+/** HashTable: O(n^2) time + O(n) space，将a, b, c三个数中任意一个放进HashTable中，然后用你n^2 time to see if -(a + b)在不在hash中
+* Two pointers: O(n^2) time + O(1) space. a + b = -c，因为排序之后a <= b <= c，我们可以for loop最大的数，然后在他的左边找-(a + b),
+                也可以for loop最小的数，在他的右边找b + c -> b + c = -a, a只要loop到倒数第三个数：nums.length - 2即可
+* 因为有重复元素，所以存在去重问题：选代表, when we meet duplicates, we always choose the first number, if we didn't choose the first one, we won't choose the second one, we will continue;
+*/
+
+//总的复杂度是 O(nlogn + n^2) = O(n^2)
+
+//Method1-1: Two Pointer + Sort：简短写法
+class Solution {
+    public List<List<Integer>> threeSum(int[] nums) {
+        List<List<Integer>> res=new ArrayList<>();
+        Arrays.sort(nums);
+        
+        for(int i = 0; i < nums.length - 2; i++){
+            if(i == 0 || (i > 0 && nums[i] != nums[i-1])){  //avoid dupilicate
+                int lo = i + 1, hi = nums.length - 1, sum = -nums[i];
+                while(lo < hi){
+                    if(nums[lo] + nums[hi] == sum){
+                        //返回true
+                        res.add(Arrays.asList(nums[i], nums[lo], nums[hi]));
+                        //去重
+                        while(lo < hi && nums[lo] == nums[lo + 1]) {
+                            lo++; 
+                        }
+                        while(lo < hi && nums[hi] == nums[hi - 1]) {
+                            hi--;
+                        }
+                        lo++;
+                        hi--;
+                    } else if (nums[lo] + nums[hi] < sum) {
+                        lo++;
+                    } else {
+                        hi--;
+                    }
+                }
+            }
+        }
+        //返回false
+        return res;
+    }
+}
+
+
+//Method1-2: Two Pointer + Sort: with duplicates & unique result
+/**思路：we can use two sum function, time = O(n^2), space = O(1)
+for loop最小的数，在他的右边找b + c -> b + c = -a, a只要loop到倒数第三个数：nums.length - 2即可
+*/
+class Solution {
+    public List<List<Integer>> threeSum(int[] nums) {
+        List<List<Integer>> results = new ArrayList<>();
+        
+        if (nums == null || nums.length < 3) {
+            return results;
+        }
+        
+        //sort nums first
+        Arrays.sort(nums);
+        //b + c = -a, for loop最小的数
+        for (int i = 0; i < nums.length - 2; ++i) {
+            //去重
+            if (i > 0 && nums[i] == nums[i - 1]) {  //avoid dupilicate
+                continue;
+            }
+            int left = i + 1, right = nums.length - 1;
+            int target = -nums[i];    //target = -a;
+            twoSum(nums, results, left, right, target);
+        }
+        return results;
+    }
+    
+    private void twoSum(int[] nums, List<List<Integer>> ans,
+                       int start, int end, int target) {
+        while (start < end) {
+            int sum = nums[start] + nums[end];
+            if (sum == target) {
+                //return true;
+                ArrayList<Integer> triple = new ArrayList<>();
+                triple.add(-target);
+                triple.add(nums[start]);
+                triple.add(nums[end]);
+                ans.add(triple);
+                ++start;
+                --end;
+                //去重
+                while (start < end && nums[start] == nums[start - 1]) {
+                    ++start;
+                }
+                while (start < end && nums[end] == nums[end + 1]) {
+                    --end;
+                }
+            } else if (sum < target) {
+                ++start;
+            } else {
+                --end;
+            }
+        }
+        //return false;
+    }
+}
+
+
+
+Method3: HashMap + sorting, time = O(n^2), space = O(n)
+思路：Use hashmap to store value and frequency
+class Solution {
+    public List<List<Integer>> threeSum(int[] n){
+        //Arrays.sort(n);
+        List<List<Integer>> res = new ArrayList<>();
+        Map<Integer, Integer> map = new HashMap<>();
+        for(int i = 0 ; i < n.length; i++){
+            if( !map.containsKey(n[i])){
+                map.put(n[i],1);
+            } else {
+                map.put(n[i], map.get(n[i]) + 1 );
+            }
+        }
+        for( int i = 0 ; i < n.length ; i ++){
+            for( int j = i + 1 ; j < n.length ; j++){
+                int rest = 0 - n[i] - n[j];
+                int count = 0;
+                if(n[i] == rest) count++;
+                if(n[j] == rest) count++;
+                if(map.containsKey(rest) && map.get(rest) > count && rest >= n[j]){
+                    res.add(Arrays.asList(n[i],n[j],rest));
+                }
+                while( j < n.length - 1 && n[j] == n[j+1]) j++;    
+            }
+            while( i < n.length -1 && n[i] == n[i+1] ) i++;
+        }
+        return res;
+    }
+}
+
+
+//follow up: kSum, time = O(n^(k-1))
+/**思路：
+F[0][0][0]表示在一个空集中找出0个数，target为0，则有1个解，就是什么也不挑嘛！
+其实应该这样写，也就是说，找0个数，目标为0，则一定是有1个解：
+if (j == 0 && t == 0) {
+　　// select 0 number from i to the target: 0
+　　D[i][j][t] = 1;
+}
+1. 状态表达式：
+
+D[i][j][t] = D[i - 1][j][t];
+if (t - A[i - 1] >= 0) {
+D[i][j][t] += D[i - 1][j - 1][t - A[i - 1]];
+}
+意思就是：
+（1）我们可以把当前A[i - 1]这个值包括进来，所以需要加上D[i - 1][j - 1][t - A[i - 1]]（前提是t - A[i - 1]要大于0）
+（2）我们可以不选择A[i - 1]这个值，这种情况就是D[i - 1][j][t]，也就是说直接在前i-1个值里选择一些值加到target.
+
+使用三维动规数组dp[i][j][t]，表示从0遍历到A[i]后找到的j个元素之和为t的情况的总数。最后返回从整个A数组找到的k个元素之和为target的情况总数即可。操作如下：
+首先，若第i个元素，也就是A[i-1]，大于t，那么“从前i个元素中取j个元素令j个元素之和为t的所有情况”和第i个元素无关。也就是说dp[i][j][t] = dp[i-1][j][t]。而如果最后一个元素A[i-1] <= t，那么这个元素一定能带来一些不同的“从前i个元素中取j个元素令j个元素之和为t的情况”，但是，还要加上完全不考虑这个元素A[i-1]时的解的集合，也就是dp[i-1][j-1][t-A[i-1]]。因为，加上这个元素之后的dp[i][j-1][t-A[i-1]]不会影响已经遍历过的dp[i-1][j-1][t-A[i-1]]。
+*/
+class Solution {
+    public int  kSum(int A[], int k, int target) {
+        int n = A.length;
+        int[][][] f = new int[n + 1][k + 1][target + 1];
+        for (int i = 0; i < n + 1; i++) {
+            f[i][0][0] = 1;
+        }
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= k && j <= i; j++) {
+                for (int t = 1; t <= target; t++) {
+                    f[i][j][t] = 0;
+                    if (t >= A[i - 1]) {
+                        f[i][j][t] = f[i - 1][j - 1][t - A[i - 1]];
+                    }
+                    f[i][j][t] += f[i - 1][j][t];
+                } // for t
+            } // for j
+        } // for i
+        return f[n][k][target];
+    }
+}
