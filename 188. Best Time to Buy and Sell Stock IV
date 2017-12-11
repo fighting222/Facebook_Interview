@@ -1,0 +1,61 @@
+/**题目：
+Say you have an array for which the ith element is the price of a given stock on day i.
+
+Design an algorithm to find the maximum profit. You may complete at most k transactions.
+
+Note:
+You may not engage in multiple transactions at the same time (ie, you must sell the stock before you buy again).
+*/
+
+
+
+/**思路：DP: time = O(k * prices.length), space = O(k)
+*1. The basic idea is to create two tables. hold and unhold.
+    1）hold/buy[i][j] means the maximum profit with at most i transaction for 0 to j-th day. hold means you have a stock in your hand.
+    2）unhold/sell[i][j] means the maximum profit with at most i transaction for 0 to j-th day. unhold means you don't have a stock in       your hand.
+    when you sell your stock this is a transaction but when you buy a stock, it is not considered as a full transaction. so this is why the two equation look a little different.
+    hold/buy[i][j] = Math.max(unhold[i-1][j] - prices[j], hold[i][j-1]);
+    ---unhould[i-1][j] - prices[j] means that you purches a stock on jth day
+    unhold[i][j] = Math.max(prices[j] + hold[i][j-1], unhold[i][j-1]);
+    ---hold[i-1][j-1] + prices[j] means that you sell a stock on jth day
+2. And we have to initiate hold table when k = 0.
+3(不说）. When the situation is you can not buy a new stock at the same day when you sell it. For example you can only buy a new stock after one day you sell it. The same idea. Another situation is when you have to pay a transaction fee for each transaction, just make a modification when you sell it, So just change the unhold equation a little.
+4. !!!!!!!注意陷阱：if k比prices.length大出很多，DP就变得非常没有效率，这道题就变成了相当可以买卖无数次，用best time to buy and sell stock II解
+*/
+class Solution {
+    public int maxProfit(int k, int[] prices) {
+        if (k > prices.length / 2) {   //如果k比prices.length大出很多，DP就变得非常没有效率 -> 用stock II求解，相当于可以buy and sell无数次
+            return maxP(prices);
+        }
+        
+        if (k == 0 || prices.length < 2) {
+            return 0;
+        }
+        
+        // hold[i][j]: For at most i transactions, the max profit on jth day with a stock in hand.
+    // unhold[i][j]: For at most i transactions, the max profit on jth day without a stock in hand
+        int[][] hold = new int[k + 1][prices.length];
+        int[][] unhold = new int[k + 1][prices.length];
+        
+        for (int i = 1; i <= k; ++i) {
+            hold[i][0] = -prices[0];   //buy stock, pay money on the jth day
+            unhold[i][0] = 0;   //no profit at the first day
+            for (int j = 1; j < prices.length; ++j) {
+                hold[i][j] = Math.max(unhold[i-1][j] - prices[j], hold[i][j-1]); // Buy or not buy
+                unhold[i][j] = Math.max(prices[j] + hold[i][j-1], unhold[i][j-1]); // Sell or not sell
+            }
+        }
+        return unhold[k][prices.length - 1];
+    }
+    
+//We can keep adding the difference between the consecutive numbers of the array if the second number is larger than the first one, so total sum we obtain will be the maximum profit. 
+    private int maxP(int[] prices) {   // Solution from Best Time to Buy and Sell Stock II 
+        int max = 0;
+        for (int i = 0; i < prices.length - 1; ++i) {
+            if (prices[i + 1] > prices[i]) {
+                max += prices[i + 1] - prices[i];
+            }
+        }
+        return max;
+    }
+}
