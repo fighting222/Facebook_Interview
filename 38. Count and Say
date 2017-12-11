@@ -1,0 +1,74 @@
+/**
+  n = 1时，打印一个1。
+
+ n = 2时，看n=1那一行，念：1个1，所以打印：11。
+
+ n = 3时，看n=2那一行，念：2个1，所以打印：21。
+
+ n = 4时，看n=3那一行，念：一个2一个1，所以打印：1211。
+ 
+ n = 5时，看n=4那一行，念：一个1一个2两个1，所以打印：11 12 21
+ we know that the result of n = i depends on the results of n = i - 1, so we can use a count variable to record the repeat time of the current char, and another variable to record that char 
+ *根据第i-1个序列，构建第i个序列，需要一个count记录当前字符重复的次数，以及需要一个数值变量记录上一个字符的值
+*/
+//time = O(n!), space = O(n)
+class Solution {
+    public String countAndSay(int n) {
+        if (n <= 0) {
+            return "";
+        }
+        String curRes = "1";
+        int start = 1;   //从n = 1开始,
+        while (start < n) {   //从1开始，但是第一个loop得到的curRes = “11”，就是n = 2的情况，所以start < n作为结束
+            StringBuilder sb = new StringBuilder();
+            int count = 1;
+            for (int i = 1; i < curRes.length(); ++i) {
+                if (curRes.charAt(i) == curRes.charAt(i - 1)) { //// 重复的值，计数器加1
+                    ++count;
+                } else {  //finish the counting for the current char, // 有新的值出现，记录到sb
+                    sb.append(count);
+                    sb.append(curRes.charAt(i - 1));
+                    count = 1;   //reset count 
+                }
+            }
+            // 最后记得把最后一个字符加上
+            sb.append(count);
+            sb.append(curRes.charAt(curRes.length() - 1));
+            curRes = sb.toString();  // 更新curRes
+            ++start;
+        }
+        return curRes;
+    }
+}
+
+
+//Method2: 从后往前读, time = O(n), space = O(1)
+/**思路：
+思路
+因为数字不好从前向后遍历每一位（要先统计一共有多少位，比较麻烦），所以我们直接从后向前计数，最后把结果倒置就行了。
+注意
+退出循环后还要额外执行一次append，将最后的连续数字补齐
+*/
+public String countAndSay(int n) {
+    if(n <= 0) return "";
+    int last = n % 10, cnt = 1;
+    n = n / 10;
+    StringBuilder sb = new StringBuilder();
+    while(n > 0){
+        int digit = n % 10;
+        if(digit == last){
+            cnt++;
+        } else {
+            sb.append(cnt);
+            sb.append(last);
+            cnt = 1;
+            last = digit;
+        }
+        n = n / 10;
+    }
+    sb.append(cnt);
+    sb.append(last);
+    sb.reverse();
+    return sb.toString();
+}
+
