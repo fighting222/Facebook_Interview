@@ -1,0 +1,194 @@
+//in-place solution, NO extra array is built, O(1) space
+
+//总结：follow up1: Merge k sorted arrays,有两种方法，Method1: Divide & Conqure，Method2: Min-heap
+//follow up2: Iterator Merge k Sorted Array
+
+/**Method1：思路：time = O(m + n), space = O(1)
+1. Because one input array has enough space to hold all elments in another input array, so we can do the merge in-place to put merged array in the larger input array. 
+2. So that we can loop two input arrays from the last position, then to put the larger number into the last position of the larger input array. And repeat this step until we finish loop the shorter array
+*/
+//因为新数组的长度是确定的m + n,所以可以从最后一个位置开始排序
+class Solution {
+    public void merge(int[] nums1, int m, int[] nums2, int n) {
+        int i = m - 1;  //last number of nums1
+        int j = n - 1;  //last number of nums2
+        int index = m + n - 1;   //整个nums1数组，最后的位子
+        
+        //if nums2 is longer than nums1, if we finished sorting nums2, we do not need to sort num1, 就不用管nums1, 因为本身就是在nums1里面排序
+        while (i >= 0 && j >= 0) {
+            if (nums1[i] < nums2[j]) {
+                //!!!必须写index--， j--， i--不能写--index！！！
+                nums1[index--] = nums2[j--];
+            } else {
+                nums1[index--] = nums1[i--];
+            }
+        }
+        
+        //nums2 is longer than nums1, we need to sort nums2 into nums1
+        while (j >= 0) {
+            nums1[index--] = nums2[j--];
+        }
+    }
+}
+
+
+//follow up1: Merge k sorted Array, 
+//Divide & Conquer + Merge Sort：time = O(nlogk), space = O(logk)
+///将array分成 A(arrays/2)，B(k / 2)两个部分，分别进行排序，再合并到一起, like merge two sorted list
+public class Solution {
+    /**
+     * @param arrays k sorted integer arrays
+     * @return a sorted array
+     */
+    public List<Integer> mergekSortedArrays(int[][] arrays) {
+        List<Integer> res = new ArrayList<>();
+        if (arrays == null || arrays[0] == null) {
+            return null;
+        }
+        if (arrays.length == 0 || arrays[0].length == 0) {
+            return res;
+        }
+        int[] newArray = mergeHelper(arrays, 0, arrays.length - 1);
+        for (int i = 0; i < newArray.length; i++) {
+            res.add(newArray[i]);
+        }
+        return res;
+    }
+    
+    private int[] mergeHelper(int[][] arrays, int start, int end) {
+        if (start == end) {
+            return arrays[start];
+        }
+        int mid = start + (end - start) / 2;
+        int[] left = mergeHelper(arrays, start, mid);
+        int[] right = mergeHelper(arrays, mid + 1, end);
+        return mergeTwoArrays(left, right);
+    }
+    
+    private int[] mergeTwoArrays(int[] array1, int[] array2) {
+        int a1 = array1.length;
+        int a2 = array2.length;
+        int[] newArray = new int[a1 + a2];
+        int i = 0;
+        int j = 0;
+        int k = 0;
+        while (i < a1 && j < a2) {
+            if (array1[i] < array2[j]) {
+                newArray[k++] = array1[i++];
+            } else {
+                newArray[k++] = array2[j++];
+            }
+        }
+        while (i < a1) {
+            newArray[k++] = array1[i++];
+        }
+        while (j < a2) {
+            newArray[k++] = array2[j++];
+        }
+        return newArray;
+    }
+}
+
+
+//follow up1: Method2: PriorityQueue to build a min-heap
+/** Method2: PriorityQueue to build a min-heap
+first we gonne get all head nodes of k arrays, and then put these heads into the min-heap. Second,  we will pop the topmost element,which is the smalles element of the heap, so this node will be the head of the merged linked list, Third, we can find which array does the element we just poped belongs to, and add the next node into our heap, So we can just repeat these three steps that I just described，有一点需要注意！！！！！！！！PriorityQueue需要存储单位。自己建一个Class Node 存val, x,y index.    
+因为array里没有 'next' pointer，只能存x,y来推next element
+* 用PriorityQueue取k个链表表头的最小值, 然后poll最小的node，然后再将poll出来node的next放进queue排序
+* 1. 定义Comparator: 从小 -> 大排序
+* time complexity = O(nlogk), k是有几个链表, n是整个nodes的多少, space = O(k)
+*/
+//Method1: using Min-heap
+public class Solution {
+    public class Node {
+        int val, x, y;
+        public Node(int val, int x, int y) {
+            this.val = val;
+            this.x = x;
+            this.y = y;
+        }
+    }
+    
+    public List<Integer> mergekSortedArrays(int[][] arrays) {
+        List<Integer> rst = new ArrayList<Integer>();
+        if (arrays == null || arrays.length == 0) {
+            return rst;
+        }
+        
+        PriorityQueue<Node> queue = new PriorityQueue<Node>(arrays.length,
+            new Comparator<Node>() {
+                public int compare(Node a, Node b){
+                    return a.val - b.val;
+                }
+            }
+        );
+        
+        //initilize
+        for (int i = 0; i < arrays.length; i++) {
+            if (arrays[i].length != 0) {
+                queue.offer(new Node(arrays[i][0], i, 0));
+            }
+        }
+        
+        Node node;
+        
+        while (!queue.isEmpty()) {
+            node = queue.poll();
+            rst.add(node.val);
+            if (node.y < arrays[node.x].length - 1) {
+                queue.offer(new Node(arrays[node.x][node.y + 1], node.x, node.y + 1));
+            }   
+        }
+        
+        return rst;
+
+    }
+}
+
+
+
+//follow up2: Iterator Merge k Sorted Array
+public class iteratorForMergekSortedArrays {
+    /**
+     * @param arrays k sorted integer arrays
+     * @return a sorted array
+     */
+    public class ArrayIterator {
+        int val;//use val to store the next value of this array
+        Iterator it;//store this array's iterator
+        public ArrayIterator(Iterator i) {
+            val = i.next();
+            it = i;
+        }
+    }
+    
+    private Queue<ArrayIterator> heap;
+    
+    public iteratorForMergekSortedArrays(ArrayList<ArrayList<Integer>> arrays) {
+        heap = new PriorityQueue<>(1, new Comparator<ArrayIterator>(){
+            public int compare(ArrayIterator a, ArrayIterator b) {
+                return a.val - b.val;
+            }
+        });
+        for (ArrayList array : arrays) {
+            if (!array.isEmpty()) {
+                ArrayIterator i = new ArrayIterator(array.iterator());
+                heap.offer(i);
+            }
+        }
+    }
+    
+    public int next() {//assume next() will be called only if hasNext() is true
+        ArrayIterator i = heap.poll();
+        int res = i.val;
+        if (i.it.hasNext()) {
+            i.val = i.it.next();
+            heap.offer(i);
+        }
+        return res;
+    }
+
+    public boolean hasNext() {
+        return !heap.isEmpty();
+    }
+}
