@@ -1,0 +1,192 @@
+//Method1: HashMap + single linked list: insert time = O(1)
+//用Liksed list不用ArrayList是因为ArrayList没有办法重复使用头部删除的位子 & ArrayList任意位置的删除是O(n), 不是O(1)
+/**用map 查找node O(1) time, 和single linked list (delete O(1))，我们需要trace当前节点的前面一个节点去delete current node。key = current node.val(get里面的int key), value = previous node， 同时需要dummy node help us track the head of linked list,支持对head的delete
+* newest(most uscently used) node append to tail
+* oldest(least recently used node) append to head
+*/
+
+class LRUCache {
+    //Single Linked List + HashMap 
+    /*Using a singly-linked list:
+    Get = set: check map.
+    Key exists: move value to tail of the list. Return value.
+    Key doesn't exist: return -1.
+    Put:
+    Key exists: set to new value, and move the node to the most recently used direction.
+    Key doesn't exist:
+    Insert node to the most recently used position.
+    If capacity is exceeded, remove the least recently used item (head of list).
+*/
+    
+    //map的key是int value，map的value是要找节点的前面一个节点
+    private class ListNode {
+        ListNode next;
+        int key;
+        int value;
+        
+        public ListNode(int key, int value) {
+            this.key = key;
+            this.value = value;
+        }
+    }
+    
+    private ListNode dummy;  //track the head of linked list,支持对head的delete
+    private ListNode tail;
+    
+    private Map<Integer, ListNode> map;   //key: int key(current.val), value = previous node
+    private int capacity;
+    
+    // @param capacity, an integer
+    public LRUCache(int capacity) {
+        // write your code here
+        dummy = new ListNode(0, 0);  //因为是single linked list, 所以需要dummy和tail来track，double list就不需要
+        tail = dummy;
+        map = new HashMap<>();
+        this.capacity = capacity;
+    }
+
+    // @return an integer
+    //use:get = set
+    public int get(int key) {
+        // write your code here
+        if (map.containsKey(key)) {
+            ListNode previous = map.get(key);
+        
+            moveToTail(previous);
+            return tail.value;
+        } else {
+            return -1;
+        }
+    }
+
+    // @param key, an integer
+    // @param value, an integer
+    // @return nothing
+    
+    //插入
+    public void put(int key, int value) {
+        // write your code here
+        
+        if (map.containsKey(key)) {
+            ListNode previous = map.get(key);
+            previous.next.value = value;   
+            moveToTail(previous);
+        } else {
+            if (map.size() == capacity) {  //到了capacity之后，need to remove the least recently used one which is the head
+            //Remove LRU 
+                map.remove(dummy.next.key);
+                dummy.next = dummy.next.next;
+                if (dummy.next != null) {
+                    map.put(dummy.next.key, dummy);
+                }
+            }
+            ListNode put = new ListNode(key, value);   //insert new key, new value into the tail of list(most recently used position)
+            tail.next = put;
+            map.put(key, tail);
+            tail = put;
+        }
+    }
+        
+    /** 用cache来储存，就意味着储存空间很小，要不断update淘汰一些不常用的数据
+     * insert的时候，如果存储空间不够，要invalidate least recently used item
+     */
+    private void moveToTail(ListNode previous) {  //write a moToTail fucntion 
+        ListNode got = previous.next;
+        
+        if (got == tail) {
+            return;
+        }
+        previous.next = got.next;
+        if (previous.next != null) {
+            map.put(previous.next.key, previous);
+        }
+        tail.next = got;
+        got.next = null;
+        map.put(got.key, tail);
+        tail = got;
+    }
+}
+
+/**
+ * Your LRUCache object will be instantiated and called as such:
+ * LRUCache obj = new LRUCache(capacity);
+ * int param_1 = obj.get(key);
+ * obj.put(key,value);
+ */
+
+//HashMap + Double Linked List: insert time = O(1) Map中 key: int key,  value: current node
+//思路： hashMap that keeps track of the keys and its values in the double linked list. One interesting property about double linked list is that the node can remove itself without other reference. In addition, it takes constant time to add and remove nodes from the head or tail.
+//The LRU cache is a hash table of keys and double linked nodes. The hash table makes the time of get() to be O(1). The list of double linked nodes make the nodes adding/removal operations O(1)
+class LRUCache {
+    
+    private class Node {
+        int key;
+        int value;
+        Node prev;
+        Node next;
+        
+        public Node(int key, int value) {
+            this.key = key;
+            this.value = value;
+            this.prev = null;
+            this.prev = null;
+        }
+    }
+    
+    private int capacity;
+    private HashMap<Integer, Node> map = new HashMap<>(); //key: current node.val,  value: current node
+    private Node head = new Node(-1, -1);
+    private Node tail = new Node(-1, -1);
+    
+    
+    public LRUCache(int capacity) {
+        this.capacity = capacity;
+        //把head，tail用doubly linked list连起来
+        tail.prev = head;
+        head.next = tail;
+    }
+    
+    public int get(int key) {
+        if (!map.containsKey(key)) {
+            return -1;
+        }
+        //if map.containsKey(key) -> remove current key
+        Node current = map.get(key);
+        current.prev.next = current.next;
+        current.next.prev = current.prev;
+        
+        //move current key to tail;
+        moveToTail(current);
+        
+        return map.get(key).value;
+    }
+    
+    public void put(int key, int value) {
+//this internal `get` method will update the key's position in the linked list.
+        if (get(key) != -1) {
+        //get(key) != -1说明key之前不存在
+            map.get(key).value = value;
+            return;
+        }
+        
+        if (map.size() == capacity) {
+        //存储空间满 -> remove LRU
+            map.remove(head.next.key);
+            head.next = head.next.next;
+            head.next.prev = head;
+        }
+        
+        Node insert = new Node(key, value);
+        map.put(key, insert);
+    //Move the newly inserted key to the tail, which is MRU(most recently used)
+        moveToTail(insert);
+    }
+    
+    private void moveToTail(Node current) {
+        current.prev = tail.prev;
+        tail.prev = current;
+        current.prev.next = current;
+        current.next = tail;
+        
+    }
+}
