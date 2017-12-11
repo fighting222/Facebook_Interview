@@ -1,0 +1,29 @@
+//Method1: Stack  time = O(n), space = O(n)
+/**思路：
+1. Iterate through string until empty
+2. Push any open parentheses onto stack
+3. Check stack for corresponding closing parentheses, if the current char i is a cloing parentheses, we gonna check if the top most element in stack is the corresponding open parentheses, if it is, we will pop it. then keep checking
+*/
+class Solution {
+    public boolean isValid(String s) {
+        Stack<Character> stack = new Stack<>();
+        // Iterate through string until empty
+        for(int i = 0; i < s.length(); i++) {
+            // Push any open parentheses onto stack
+            if(s.charAt(i) == '(' || s.charAt(i) == '[' || s.charAt(i) == '{')
+                stack.push(s.charAt(i));
+            // Check stack for corresponding closing parentheses, false if not valid
+            //if the current char i is a cloing parentheses, we gonna check if the top most element in stack is the corresponding open parentheses, if it is, we will pop it. then keep checking
+            else if(s.charAt(i) == ')' && !stack.isEmpty() && stack.peek() == '(')
+                stack.pop();
+            else if(s.charAt(i) == ']' && !stack.isEmpty() && stack.peek() == '[')
+                stack.pop();
+            else if(s.charAt(i) == '}' && !stack.isEmpty() && stack.peek() == '{')
+                stack.pop();
+            else
+                return false;
+        }
+        // return true if no open parentheses left in stack
+        return stack.isEmpty();
+    }
+}
