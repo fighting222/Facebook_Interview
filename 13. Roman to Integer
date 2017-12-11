@@ -1,0 +1,80 @@
+/**  
+罗马数字的规则
+1. placed I before V or X indicates one less, so four is IV (one less than 5) and 9 is IX (one less than 10).
+2. X placed before L or C indicates ten less, so forty is XL (10 less than 50) and 90 is XC (ten less than a hundred).
+C placed before D or M indicates a hundred less, so four hundred is CD (a hundred less than five hundred) and nine hundred is CM (a hundred less than a thousand).
+3. 相同的数字连写，所表示的数等于这些数字相加得到的数，例如：III = 3
+4. 正常使用时，连续的数字重复不得超过三次
+*/
+
+//Method1：time = O(n), space = O(1)
+//正着看，从高位数开始相加, the conner case we need to check is when the former char is less than the current char, lik CM, IV
+//从前往后扫描，用一个临时变量记录分段数字。
+//如果当前比前一个大，说明这一段的值应该是当前这个值减去上一个值。比如IV = 5 – 1
+//否则，将当前值加入到结果中，然后开始下一段记录。比如VI = 5 + 1， II=1+1
+
+class Solution {
+    public int romanToInt(String s) {
+        char[] str = s.toCharArray();
+        int result = toInt(str[0]);
+        for (int i = 1; i < s.length(); ++i) {
+            result += toInt(str[i]);
+            if (toInt(str[i - 1]) < toInt(str[i])) {
+                result -= toInt(str[i - 1]) * 2;  //例如：MCMIV, C < M应该是加上（M - C）= 1000 - 100 = 900，但是因为加了C，又加了M，相当于C加了两次，所以需要减去C * 2 = 100 * 2
+            }
+        }
+        return result;
+    }
+    
+    private int toInt(char s) {
+        switch(s) {
+            case 'I': return 1;
+            case 'V': return 5;
+            case 'X': return 10;
+            case 'L': return 50;
+            case 'C': return 100;
+            case 'D': return 500;
+            case 'M': return 1000;
+        }
+        return 0;
+    }
+}
+
+
+//Method2: time = O(s.length()), space = O(1)
+//几种特殊情况比如IV,IX, XL, XC, CD, CM。
+// Split the Roman Numeral string into Roman Symbols (character).
+//说底下的：
+// use hashmap to put each symbol of Roman Numerals and the value it represents
+// Take symbol one by one from last one:
+// If current value of symbol(I) is less than or equal to the value of front symbol(V), then add this value to the sum. eg: VI
+// else subtract this value by adding the value of next symbol to the running total. eg:IV
+*/
+class Solution {
+    public int romanToInt(String s) {
+        if (s == null || s.length() == 0) {
+            return 0;
+        }
+        
+        Map<Character, Integer> map = new HashMap<>();
+        map.put('I', 1);
+        map.put('V', 5);
+        map.put('X', 10);
+        map.put('L', 50);
+        map.put('C', 100);
+        map.put('D', 500);
+        map.put('M', 1000);
+        
+        int length = s.length();
+        //倒着看，从最后一位，个位数开始相加
+        int result = map.get(s.charAt(length - 1));  //比如MCMIV,先得到最后一位V是多少，result = 5   
+        for (int i = length - 2; i >=0; --i) {
+            if (map.get(s.charAt(i)) < map.get(s.charAt(i + 1))) {
+                result -= map.get(s.charAt(i));    //i = s.length() - 2的位置是I < V, result = 5 - 1 = 4
+            } else {
+                result += map.get(s.charAt(i));    
+            }
+        }
+        return result;
+    }   
+}
