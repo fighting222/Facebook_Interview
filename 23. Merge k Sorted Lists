@@ -1,0 +1,205 @@
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) { val = x; }
+ * }
+ */
+/** Method1: PriorityQueue to build a min-heap
+first we gonne get all head nodes of k linked lists, and then put these heads into a min-heap. Second, we will pop the topmost element, which is the smalles element amount these heads, it will become the head of the new LinkedList, THird, we can find which linked list does the element we just poped belongs to, and add the next node of that List into the heap, So we can just repeat these three steps to get the list until the heap becomes empty
+* 用PriorityQueue取k个链表表头的最小值, 然后poll最小的node，然后再将poll出来node的next放进queue排序
+* 1. 定义Comparator: 从小 -> 大排序
+* time complexity = O(nlongk), k是有几个链表, n是整个nodes的多少, space = O(k)
+*/
+//Method1: using Min-heap
+class Solution {
+    
+    public ListNode mergeKLists(ListNode[] lists) {
+        if (lists ==null || lists.length == 0) {
+            return null;
+        }
+        
+        //build a min-heap
+        PriorityQueue<ListNode> queue = new PriorityQueue<>(lists.length, new Comparator<ListNode>() {
+            public int compare(ListNode node1, ListNode node2) {
+                return node1.val - node2.val;
+            }
+        });
+        
+        ListNode dummy = new ListNode(0);
+        ListNode tail = dummy;
+        
+        //time = O(n)
+        for (int i = 0; i < lists.length; ++i) {
+            if (lists[i] != null) {
+                queue.offer(lists[i]);
+            }
+        }
+        
+        //这部分最耗时: time = 2logk
+        while (!queue.isEmpty()) {
+            ListNode head = queue.poll();   //time = logk
+            tail.next = head;
+            tail = head;
+//用PriorityQueue取k个链表表头的最小值, 然后poll最小的node，然后再将poll出来node的next放进queue排序
+            if (head.next != null) {
+                queue.offer(head.next);   //time = logk
+            }
+        }
+        return dummy.next;
+    }
+}
+
+
+//Method2: Divide & Conquer + Merge Sort：time = O(nlogk), space = O(logk)
+//将lists分成A(k / 2)，B(k / 2)两个部分，分别进行排序，再合并到一起, like merge two sorted list
+class Solution {
+    public ListNode mergeKLists(ListNode[] lists) {
+        if (lists == null || lists.length == 0) {
+            return null;
+        }   
+        
+        return mergeHelper(lists, 0, lists.length - 1);
+    }
+    
+    private ListNode mergeHelper(ListNode[] lists, int start, int end) {
+        if (start == end) {
+            return lists[start];
+        }
+      
+        int mid = start + (end - start) / 2;
+        ListNode left = mergeHelper(lists, start, mid);
+        ListNode right = mergeHelper(lists, mid + 1, end);
+        return mergeTwoSortedList(left, right);
+    }
+    
+    private ListNode mergeTwoSortedList(ListNode left, ListNode right) {
+        ListNode dummy = new ListNode(0);
+        ListNode tail = dummy;
+        while (left != null && right != null) {
+            if (left.val < right.val) {
+                tail.next = left;
+                tail = left;
+                left = left.next;
+            } else {
+                tail.next = right;
+                tail = right;
+                right = right.next;
+            }
+        }
+        
+        if (left != null) {
+            tail.next = left;
+        } else {
+            tail.next = right;
+        }
+        return dummy.next;
+    }
+}
+
+
+//Metod3: Merge two by two
+//Method3: Merge two by two
+/**假如有1，2，3，4，5，6个list。先合并1 & 2 = 7，3 & 4 = 8，5 & 6 = 9，
+ * 在合并7 & 8...
+ * 不能先合并1 & 2 = 7，在合并7 & 3，不可以！！！！！
+ * time complexity = O(nlogk), space = O(logk)
+ */
+class Solution {
+    /**
+     * @param lists: a list of ListNode
+     * @return: The head of one sorted list.
+     */
+    public ListNode mergeKLists(List<ListNode> lists) {  
+        if (lists == null || lists.size() == 0) {
+            return null;
+        }
+        
+        while (lists.size() > 1) {
+            List<ListNode> new_lists = new ArrayList<>();
+            for (int i = 0; i + 1 < lists.size(); i += 2) {
+                ListNode merge_list = merge(lists.get(i), lists.get(i + 1));
+                new_lists.add(merge_list);
+            }
+            if (lists.size() % 2 == 1) {
+                new_lists.add(lists.get(lists.size() - 1));
+            }
+            lists = new_lists;
+        }
+        return lists.get(0);
+    }
+    
+    private ListNode merge(ListNode left, ListNode right) {
+        ListNode dummy = new ListNode(0);
+        ListNode tail = dummy;
+        while (left != null && right != null) {
+            if (left.val < right.val) {
+                tail.next = left;
+                tail = left;
+                left = left.next;
+            } else {
+                tail.next = right;
+                tail = right;
+                right = right.next;
+            }
+        }
+        
+        if (left != null) {
+            tail.next = left;
+        } else {
+            tail.next = right;
+        }
+        
+        return dummy.next;
+    }
+}
+
+
+
+//follow up: iterator for merge k sorted arrays, heap: O(nlogk) time, O(k) space
+//Method: Priority Queue -> min-heap
+public class iteratorForMergekSortedArrays {
+    /**
+     * @param arrays k sorted integer arrays
+     * @return a sorted array
+     */
+    public class ArrayIterator {
+        int val;//use val to store the next value of this array
+        Iterator it;//store this array's iterator
+        public ArrayIterator(Iterator i) {
+            val = i.next();
+            it = i;
+        }
+    }
+    
+    private Queue<ArrayIterator> heap;
+    
+    public iteratorForMergekSortedArrays(ArrayList<ArrayList<Integer>> arrays) {
+        heap = new PriorityQueue<>(1, new Comparator<ArrayIterator>(){
+            public int compare(ArrayIterator a, ArrayIterator b) {
+                return a.val - b.val;
+            }
+        });
+        for (ArrayList array : arrays) {
+            if (!array.isEmpty()) {
+                ArrayIterator i = new ArrayIterator(array.iterator());
+                heap.offer(i);
+            }
+        }
+    }
+    
+    public int next() {//assume next() will be called only if hasNext() is true
+        ArrayIterator i = heap.poll();
+        int res = i.val;
+        if (i.it.hasNext()) {
+            i.val = i.it.next();
+            heap.offer(i);
+        }
+        return res;
+    }
+
+    public boolean hasNext() {
+        return !heap.isEmpty();
+    }
+}
