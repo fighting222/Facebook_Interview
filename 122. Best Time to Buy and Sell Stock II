@@ -1,0 +1,64 @@
+/**题目：
+Say you have an array for which the ith element is the price of a given stock on day i.
+
+Design an algorithm to find the maximum profit. You may complete as many transactions as you like (ie, buy one and sell one share of the stock multiple times). However, you may not engage in multiple transactions at the same time (ie, you must sell the stock before you buy again).
+
+
+*/
+
+
+//最好说Method2！！！！！！！
+//看solution： https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii/solution/
+//找valley和peak，求difference
+//time = O(n), space = O(1)
+//Method1: Peak Valley 
+/**思路：
+If we analyze the graph, we notice that the points of interest are the consecutive valleys and peaks.
+
+Mathematically speaking:
+Total Profit= sum of (height(peek) - height(valley))
+The key point is we need to consider every peak immediately following a valley to maximize the profit. we cannot skip any peak and valley even if their difference is samller, we need to sum ALL difference betwee peaks and valleys
+For example, in the above case, if we skip peak i and valley i and trying to obtain more profit by considering points with more difference in heights, the net profit obtained will always be lesser than the one obtained by including them,
+*/
+class Solution {
+    public int maxProfit(int[] prices) {
+         if (prices == null || prices.length == 0) {
+            return 0;
+        }
+        
+        int valley = prices[0];
+        int peak = prices[0];
+        int i = 0;  //position index -> used to find peak or valley
+        int maxProfit = 0; 
+        while (i < prices.length - 1) {   
+            while (i < prices.length - 1 && prices[i] >= prices[i + 1]) {   //find the valley 
+                i++;
+            }
+            valley = prices[i];
+            
+            while (i < prices.length - 1 && prices[i] <= prices[i + 1]) {   //finf the peak
+                i++;
+            }
+            peak = prices[i];
+            maxProfit += peak - valley;
+        }
+        return maxProfit;
+    }
+}
+
+
+//Method2: Single One, time = O(n), space = O(1)
+/**思路：Because we can complete as many transactions as I want without transaction fees, so as long as the sell price higher than the price I brought, we can do a transaction
+(We can keep adding the difference between the consecutive numbers of the array if the second number is larger than the first one, so total sum we obtain will be the maximum profit. )
+*/
+class Solution {
+    public int maxProfit(int[] prices) {
+        int maxProfit = 0;
+        for (int i = 1; i < prices.length; ++i) {
+            if (prices[i] > prices[i - 1]) {
+                maxProfit += prices[i] - prices[i - 1];
+            }
+        }
+        return maxProfit;
+    }
+}
