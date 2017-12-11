@@ -1,0 +1,24 @@
+class Solution {
+    public int hammingDistance(int x, int y) {
+    //fisrt: add two integers' binary numbers, for example: x = 1, y = 4 -> 0001 + 0100 = 0101
+//0 xor 0 = 0,   o xor 1 = 1,   1 xor 1 = 1,  1 xor 0 = 1 （XOR: exclusive or operator）, then we just count how many 1 it has after adding these two binaries 
+        
+        
+        //time complexity = O(logn), space complexity = O(1) because a number n has logn bits in its binary version
+        int i = x ^ y;
+        int count = 0;
+        while (i != 0) {      //只要i > 0,就不结束循环
+            count += i & 1;   //only counts when x = 1;
+            i >>= 1;          //i will subtract 1 after count increased by 1: 9(1001) subtract 1 -> 1000(8) - 1 -> 0111(7)
+        }
+        return count;
+    }
+}
+
+/** 11,12行可以合并写成：count += (i - 1) & 1, this is Brain Kernighan's Algorithm
+    1. Initialize count = 0;
+    2. If integer is NOT 0:
+        * Do bitwise & with (i - 1) and assign the value back to i: = (i - 1) & i;
+        * Increment count by 1
+        * go back to step 2
+    3. Else return count
