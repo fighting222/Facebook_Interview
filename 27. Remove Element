@@ -1,0 +1,55 @@
+/***题目：
+Given an array and a value, remove all instances of that value in-place and return the new length.
+
+Do not allocate extra space for another array, you must do this by modifying the input array in-place with O(1) extra memory.
+
+The order of elements can be changed. It doesn't matter what you leave beyond the new length.
+
+Example:
+
+Given nums = [3,2,2,3], val = 3,
+
+Your function should return length = 2, with the first two elements of nums being 2.
+*/
+
+
+
+//Method1: Sort: time = O(nlogn), space = O(1)
+//思路；we can sort the input array and use a variable called size to track the last position of element that less than the given value in the array. so size + 1 will be the result
+class Solution {
+    public int removeElement(int[] nums, int val) {
+        if (nums == null || nums.length == 0) {
+            return 0;
+        }
+        
+        Arrays.sort(nums);
+        
+        int size = -1;       //这里必须是-1！！！！，不能是0
+        for (int i = 0; i < nums.length; ++i) {
+            if (nums[i] != val) {
+                nums[++size] = nums[i];
+            }
+        }
+        return size + 1;
+    }
+}
+
+//Method2: 不用Sorted Array的方法 --- Two Pointers, time = O(n), space = O(1)
+//思路：we can use two pointers left and right, left starts at the begining position of the input array, right starts at the last position. Then we will swap all elements that are less than the given value into the front of the array, then right + 1 will be the result. 
+class Solution {
+    public int removeElement(int[] nums, int val) {
+        if (nums == null || nums.length == 0) {
+            return 0;
+        }
+        int left = 0, right = nums.length - 1;
+        while (left <= right) {
+            if (nums[left] == val) {
+                nums[left] = nums[right];
+                --right;    //left不要++是因为right可能=val，换过来的新数字还是 = val
+            } else {
+                ++left;
+            }
+        }
+        return right + 1;   //必须是right + 1 !!!!不能是left + 1
+    }
+}
