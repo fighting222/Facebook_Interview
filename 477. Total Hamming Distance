@@ -1,0 +1,30 @@
+/**这道题是之前那道Hamming Distance的拓展，由于有之前那道题的经验，我们知道需要用异或来求每个位上的情况，那么我们需要来找出某种规律来，比如我们看下面这个例子，4，14，2和1：
+
+4:     0 1 0 0
+
+14:    1 1 1 0
+
+2:     0 0 1 0
+
+1:     0 0 0 1
+我们先看最后一列，有三个0和一个1，那么它们之间相互的汉明距离就是3，即1和其他三个0分别的距离累加，
+然后在看第三列，累加汉明距离为4，因为每个1都会跟两个0产生两个汉明距离，同理第二列也是4，第一列是3。
+我们仔细观察累计汉明距离和0跟1的个数，我们可以发现其实就是0的个数乘以1的个数，发现了这个重要的规律，
+那么整道题就迎刃而解了，只要统计出每一位的1的个数即可
+we just need to count how many 1s do 4, 15, and 2 totally have -> total hamming distance
+*/
+//For each bit position 1-32 in a 32-bit integer, we count the number of integers in the array which have that bit set. Then, if there are n integers in the array and k of them have a particular bit set and (n-k) do not, then that bit contributes k*(n-k) hamming distance to the total.--- 解释的时候用上面的例子
+//Because we will only care how many combinations of 1 and 0 in the current bit among all numbers. n - bitCount will tell us the number of zeroes. So that the bitCount(number of ones) * (n - bitCount) will give us the number of bits differences for current 
+//time = O(n), space = O(1)
+class Solution {
+    public int totalHammingDistance(int[] nums) {
+        int total = 0, n = nums.length;
+        for (int j = 0;j < 32;j++) {  //it should be 32. the sign bit is part of the hamming distance, the problem statement doesn't limit the nums to positive.
+        int bitCount = 0;
+        for (int i = 0; i < n; i++) 
+            bitCount += (nums[i] >> j) & 1;   //count how many 1 it has
+            total += bitCount * (n - bitCount);
+        }
+    return total;
+    }
+} 
