@@ -1,0 +1,103 @@
+//Method3: StringBuilder + 2pass(dfs)
+// time = (m*n) = O(n^2), total m possible results, for each one is o(n) time,
+// space = O(1)
+/**思路：https://discuss.leetcode.com/topic/34875/easy-short-concise-and-fast-java-dfs-3-ms-solution
+* key points:
+* 1. Generate unique answer once and only once, do not rely on Set.
+* 2. Do not need preprocess.
+* 解释：there are two situitions
+* 1. 我们都知道是count '(' 和')'的数量，如果counter is negative, we know that we have ')' more than '(' -- prefix。所以to make the prefix valid, we need to remove ')'，但是问题是如果有多个多余redundant重复的‘)’,应该remove哪一个？-- 永远移除第一个')'remove the first ) in a series of concecutive )s.。因为如果remove任意一个，会产生duplicates。 if we remove any one, we will generate duplicate results, for example: s = ()), we can remove s[1] or s[2] but the result is the same ().做完上面的步骤之后，一定要keep tracking the last removal position and only remove ‘)’ after that.。（因为： If we do not have this position, we will generate duplicate by removing two ‘)’ in two steps only with a different order）
+
+* 2. 如何处理多个'('? --- Now one may ask. What about ‘(‘? What if s = ‘(()(()’ in which we need remove ‘(‘? --- However a cleverer idea is: reverse the string and reuse the code! after you reverse it your closing parentheses will become open parentheses, and then you have extra closing parenetheses, you can just do as the first step
+
+* time时间：The program only generates valid answers. Every path in the search generates one valid answer. The whole search space is a tree with k leaves. The number of nodes in the tree is roughly O(k). But this is not always true, for example a degenerated tree.
+To generate one node it requires O(n) time from the string concatenation among other things. So roughly O(nk). Accurately O(nm) where m is the total “number of recursive calls” or “nodes in the search tree”. Then you need to relate m to n in the worst case.
+*/
+class Solution {
+    public List<String> removeInvalidParentheses(String s) {
+        List<String> res = new ArrayList<>();
+        remove(s, res, 0, 0, new char[] {'(', ')'});
+        return res;
+    }
+    
+    private void remove(String s, List<String> res, int last_i, int last_j, char[] par) {
+        for (int count = 0, i = last_i; i < s.length(); ++i) {
+            if (s.charAt(i) == par[0]) {  //count open brackets
+                count++;
+            }
+            if (s.charAt(i) == par[1]) {
+                count--;
+            }
+            if (count >= 0) {  //if the prefix is in order legal, that is,within curr prefix,num of '(' is >= num of ')'
+                continue;
+            }
+   //which means we can search j within previous legal prefix to make current prefix to i legal (so check last_j to i)            
+            for (int j = last_j; j <= i; ++j) {  //remove第一个‘）’
+//( ) ( ) ), as example, we can remove first ")" or second ")", but we should avoid to remove third ")", coz when we remove second ")" and third ")", it leads to same result.
+//So, when we do the calculation, for first ")", no doubt, remove it, for the later ones, we need to make sure we eliminate the duplicated scenario.
+                if (s.charAt(j) == par[1] && (j == last_j || s.charAt(j - 1) != par[1])) {  //if it's first or not consecutive
+                    remove(s.substring(0, j) + s.substring(j + 1, s.length()), res, i, j, par);//don't forget to update last_i&last_j          
+                    //return;    //返回一个可能结果直接在这里return
+                }
+            }
+            return;
+        }
+        
+        String reversed = new StringBuilder(s).reverse().toString();
+        //"if (par[0] == '(') " --- This is used to check if the current 's' is reversed version, if it is not, that means still need to check the reversed string to make it legal, if it is reversed version 's', then you've checked both ordered and reverse ordered. What you have now is legal pattern.
+        if (par[0] == '(') {   //finished left to right
+            remove (reversed, res, 0, 0, new char[]{')', '('});
+        } else {   //finished right to left;
+            res.add(reversed);  //we need to reverse the string twice in total
+        }
+    }
+}
+
+
+//follow up: 返回任意一个可能结果, time = O(2n), space = O(2n)
+/**给一个字符串，里面有小括号和各种字符，remove最少次数得到一个括号匹配的字符串。
+
+two pass.
+用两个变量， int left, int right.
+从头扫第1遍的时候， 加进去所有left,如果right不大于left, 就加进去stringbuilder。这样保证“)”都有相对应的"("。
+第2遍，从第1次的stringbuilder的末尾扫，加进去所有 )， 如果left 不大于 right, 加进去所有 (。 
+第2遍pass的时候，解决了第1pass, “（”比 “）“多的情况。
+*/
+class Solution {
+  public String removeInvalidParantheses(String s) {
+            
+        String firstPass = "";
+        int left = 0, right = 0;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '(') {
+                left++;
+                firstPass += '(';
+            } else if (c == ')' && right<left) {
+                right++;
+                firstPass += ')';
+            } else if (c != ')' && c != '(') {
+                firstPass+=c;
+            }
+        }
+
+        left = 0;
+        right = 0;
+        StringBuilder sb = new StringBuilder();
+        for(int i = firstPass.length()-1; i >= 0; i--)
+        {
+                char c = firstPass.charAt(i);
+            if (c == ')') {
+                right++;
+                sb.append(')');
+            } else if (c == '(' && left < right) {
+                left++;
+                sb.append('(');
+            } else if (c != ')' && c != '(') {
+                sb.append(c);
+            }
+        }
+
+        return sb.reverse().toString();
+    }
+}
