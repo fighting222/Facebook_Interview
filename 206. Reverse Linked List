@@ -1,0 +1,93 @@
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) { val = x; }
+ * }
+ */
+//follow up: 有cycle，Method3
+
+//例子：1 -> 2 -> 3 -> 4 -> null
+
+//Method1: iterative: time = O(n), space = O(1)
+//we need two node pointers, one is prev, the other is curt, we set the prev node pointer = null, and curt node pointer = head;
+class Solution {
+    public ListNode reverseList(ListNode head) {
+//1 -> 2 -> 3 -> 4 -> null
+        ListNode prev = null;
+        ListNode curt = head;
+        
+        while (curt != null) {    //O(n)
+            ListNode temp = curt; //temp = 1
+            curt.next = prev;  // null <- 1
+            prev = curt;       //prev = curt = 1
+            curt = temp.next;  // curt = 2    null <- 1 2 -> 3 -> 4 -> null, prev = 1, curt = 2
+        }
+        return prev;   //因为while loop结束的时候curt = null
+    }
+}
+
+//Method2: Recursive: time = O(n), space = O(n)
+class Solution {
+    public ListNode reverseList(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+        ListNode temp = head.next;    //temp = 2
+        head.next = null;             // null <- 1
+        
+        ListNode next = reverseList(temp);  // temp = 3; head.next: null <- 2
+        temp.next = head;            // null <- 1 <- 2
+        
+        return next;
+    }
+}
+
+
+//follow up1: 最后一个node指向自己
+class Solution {
+    public ListNode reverseList(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+        
+        ListNode resList = reverList(head.next);
+        head.next.next = head; //原本1 -> 2，head.next.next就是说2.next = 1;
+        head.next = head;  //head = 2;
+        return resList; 
+    }
+}
+
+
+//follow up2: Reverse Linked List with Cycle
+class Solution {
+    public ListNode reverseList(ListNode head) {
+        if (head == null || head.next == null ||
+           head.next == head || head.next.next == head) {   //selft cycle or 只有两个node
+            return head;
+        }
+        
+        ListNode prev = head, tail = prev.next, next = preve.next;
+        //find tail first
+        while (tail != null && tail != head) {
+            tail = tail.next;
+        }
+        
+        //tail can be null or head
+        while (next != tail) {
+            ListNode nextNext = next.next;
+            next.next = prev;
+            prev = next;
+            next = nextNext;
+        }
+        
+        if (tail == head) {
+            head.next = prev;
+        } else {
+            head.next = null;
+        }
+        
+        return prev;
+    }
+}
