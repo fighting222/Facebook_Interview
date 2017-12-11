@@ -1,0 +1,148 @@
+/**
+The idea is to start from last characters of two strings and compute digit sum one by one. If sum becomes more than 1, then store carry for next digits.
+follow up: why do we use StringBuilder not String, because StringBuilder can increase capacity, but String cannot, every time, you need to insert it into the head of the string, the 
+time compleity = O(n).
+*/
+
+class Solution {
+    public String addBinary(String a, String b) {
+        StringBuilder sb = new StringBuilder();   //build a StringBuilder to store result
+        int carry = 0;  //initialize carry to be 0
+        int i = a.length() - 1, j = b.length() - 1;   //start looping two input strings from right to left
+        while (i >= 0 || j >=0) {
+            int sum = carry;
+            if (i >= 0) {
+                //calculate the sum of two digits
+                //！！！！！这个地方必须是i--，因为要进行完sum += 这个步骤之后，i才能-1！！！！！
+                sum += a.charAt(i--) - '0';   //在ASCII table中character 0's value = 91, character 1's value = 92
+            }
+            if (j >= 0) {
+                sum += b.charAt(j--) - '0';
+            }
+            sb.append(sum % 2);  //get digit: 1 + 1 = 2 % 2 = 0,或者1 + 0 = 1 % 2 = 1 就是这位的digit //如果是2个1相加得到0，carry要进一位，如果是两个一加carry = 1，得到1，carry进一位
+            carry = sum / 2;   //get carry， 1+1=2 / 2 = 1,或者 1 + 0 = 1 / 2 = 0就是carry
+        }
+        if (carry != 0) {
+            sb.append(carry);
+        }
+        return sb.reverse().toString();    //O(n)
+    }
+}
+
+
+//follow up: 如果不是二进制相加，而是十六进制相加呢？只要把算法中的除2和余2换成16，并添加相应的十六进制字母就行了
+//16进制即逢16进1，其中用A，B，C，D，E，F（字母不区分大小写）这六个字母来分别表示10，11，12，13，14，15。故而有16进制每一位上可以是从小到大为0、1、2、3、4、5、6、7、8、9、A、B、C、D、E、F共16个大小不同的数。
+//第一个：四进制:
+class Solution {
+    public String addBinary(String a, String b) {
+        StringBuilder sb = new StringBuilder();   //build a StringBuilder to store result
+        int carry = 0;  //initialize carry to be 0
+        int i = a.length() - 1, j = b.length() - 1;   //start looping two input strings from right to left
+        while (i >= 0 || j >=0) {
+            int sum = carry;
+            if (i >= 0) {
+                //calculate the sum of two digits
+                //！！！！！这个地方必须是i--，因为要进行完sum += 这个步骤之后，i才能-1！！！！！
+                sum += a.charAt(i--) - '0';   //在ASCII table中character 0's value = 91, character 1's value = 92
+            }
+            if (j >= 0) {
+                sum += b.charAt(j--) - '0';
+            }
+            sb.append(sum % 4);  //get digit: 1 + 1 = 2 % 2 = 0,或者1 + 0 = 1 % 2 = 1 就是这位的digit //如果是2个1相加得到0，carry要进一位，如果是两个一加carry = 1，得到1，carry进一位
+            carry = sum / 4;   //get carry， 1+1=2 / 2 = 1,或者 1 + 0 = 1 / 2 = 0就是carry
+        }
+        if (carry != 0) {
+            sb.append(carry);
+        }
+        return sb.reverse().toString();    //O(n)
+    }
+}
+
+// public class Solution {
+//     /*
+//      * @param a: a number
+//      * @param b: a number
+//      * @return: the result
+//      */
+//     public String addBinary(String a, String b) {
+//         // write your code here
+        
+//         /**Since sizes of two strings may be different, we first make the size of smaller string equal to that of bigger string by adding leading 0s. After making sizes same, we one by one add bits from rightmost bit to leftmost bit.
+//          * 因为两个string代表的binary number长度不一样，所以先要在短的那个binary
+//          * number前面加0，使他们长度一样
+//          */
+        
+//         String result = "";
+//         int carry = 0;       //initialize the digit sum
+//         //traverse both stirngs start from the last
+//         //int i = a.size() - 1, j = b.size() - 1;
+//         for (int i = a.length() - 1, j = b.length() - 1; i >= 0 || j >= 0; i--, j--) {
+//             //compute sum of last digits and carry
+//             int sum = carry;
+//             sum += ((i >= 0) ? a.charAt(i) - '0' : 0);
+//             sum += ((j >= 0) ? b.charAt(j) - '0' : 0);
+//             //if current digit sum is 1 or 3, add 1 to that digit
+//             result = (sum % 2) + result;
+//             //compute carry
+//             carry = sum / 2;
+//         }
+//         if (carry != 0) {
+//                 result = carry + result;
+//         }
+//         return result;
+//     }
+// }
+
+//follow up: 4进制
+class Solution {
+    public String addBinary(String a, String b) {
+    StringBuffer sb = new StringBuffer();
+    int i = a.length() - 1, j = b.length() - 1;
+    int carry = 0;
+    while (i >= 0 || j >= 0) {
+        if (i >= 0 && j >= 0) {
+            int num = a.charAt(i) - '0' + b.charAt(j) - '0' + carry;
+            if (num <= 3) {
+                sb.append(num);
+                carry = 0;
+            } else {
+                sb.append(num - 4);
+                carry = 1;
+            }
+            i--;
+            j--;
+        }
+        
+        if (i >= 0 && j < 0) {
+            int num = a.charAt(i) - '0' + carry;
+            if (num <= 3) {
+                sb.append(num);
+                carry = 0;
+            } else {
+                sb.append(num - 4);
+                carry = 1;
+            }
+            i--;
+        }
+        
+        if (i < 0 && j >= 0) {
+            if (j >= 0) {
+                int num = b.charAt(j) - '0' + carry;
+                if (num <= 3) {
+                    sb.append(num);
+                    carry = 0;
+                } else {
+                    sb.append(num - 4);
+                    carry = 1;
+                }
+            }
+            j--;
+        }
+  }
+    if (carry == 1) {
+        sb.append(1);
+    }
+    return sb.reverse().toString();
+    }
+}
+
