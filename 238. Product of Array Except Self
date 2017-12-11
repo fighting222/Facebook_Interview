@@ -1,0 +1,63 @@
+//time complexity = O(3n) -> O(n), space complexity = O(n), extra space complexity = O(1)
+//图解：http://fisherlei.blogspot.com/2015/10/leetcode-product-of-array-except-self.html
+//solve it without division，不能用除法
+
+/** Algorithm:
+1) Construct a temporary array left[] such that left[i] contains product of all elements on left of arr[i] excluding arr[i].
+2) Construct another temporary array right[] such that right[i] contains product of all elements on on right of arr[i] excluding arr[i].
+3) To get prod[], multiply left[] and right[].
+// 我们以一个4个元素的数组为例，nums=[a1,a2,a3,a4]，要想在O(n)的时间内输出结果，比较好的解决方法是提前构造好两个数组：
+// [1, a1, a1*a2, a1*a2*a3] = left
+// [a2*a3*a4, a3*a4, a4, 1] = right
+// 然后两个数组一一对应相乘，即可得到最终结果 [a2*a3*a4, a1*a3*a4, a1*a2*a4, a1*a2*a3]。
+*/
+//Method1
+class Solution {
+    public int[] productExceptSelf(int[] nums) {
+        int length = nums.length;
+        int[] result = new int[length];
+        int[] left = new int[length];
+        int[] right = new int[length];
+        
+        left[0] = 1;   //the product Left most element of left array is always 1
+        right[length - 1] = 1;   //the product right most element of right array is always 1
+        
+        //Construct the left array
+        for (int i = 1; i < length; ++i) {
+            left[i] = nums[i - 1] * left[i - 1];
+        }
+        
+        //Construct the right array
+        for (int j = length - 2; j >= 0; --j) {     //length - 2是因为right的最后一位(length - 1) = 0
+            right[j] = nums[j + 1] * right[j + 1];  //因为right是在右边，所以+1
+        }
+        
+        //Construct the product array using left[] * right[]
+        for (int k = 0; k < length; ++k) {
+            result[k] = left[k] * right[k];
+        }
+        return result;
+    }
+}
+
+
+//Method2:对Method1的优化，time = O(n), space = O(1)
+//O(n) time and O(1) space (if output space is not counted)
+class Solution {
+    public int[] productExceptSelf(int[] nums) {
+        if (nums == null || nums.length == 0) {
+            return nums;
+        }
+        int[] result = new int[nums.length];
+        result[0] = 1;//initialization
+        for (int i = 1; i < nums.length; i++) {//use result[i] to store the product of nums on the left of nums[i]
+            result[i] = result[i - 1] * nums[i - 1];//update left product
+        }
+        int right = 1;//initialization
+        for (int i = nums.length - 1; i >= 0; i--) {//use right to store the product of nums on the right of nums[i]
+            result[i] *= right;//the final result will be equal to the product of left * right
+            right *= nums[i];//update right
+        }
+        return result;
+    }
+}
