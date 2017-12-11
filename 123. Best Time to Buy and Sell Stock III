@@ -1,0 +1,29 @@
+/**题目;
+Say you have an array for which the ith element is the price of a given stock on day i.
+
+Design an algorithm to find the maximum profit. You may complete at most two transactions.
+*/
+
+
+
+/Method1: time = O(n), space = O(1)
+/**
+*思路：
+1. First assume that we have no money, so buy1 means that we have to borrow money from others, we want to borrow as less money as possible so that we can make our pofit as large as we can later(because this is negative).
+2. sell1 means we decide to sell the stock, after selling it we have price[i] money and we have to give back the money we owed, so we have get sell1 = price[i] - buy1 = prices[i] + buy1 (because buy1 is negative), we want to make this max.
+3. buy2 means we want to buy another stock, we already have sell1 money, so after buying stock2 we have buy2 = sell1 - price[i] money left, we want more money left, so we want to buy2 as less as possible so that we can max the money left
+4. sell2 means we want to sell stock2, we can have price[i] money after selling it, and we have buy2 money left before, so sell2 = buy2 + prices[i], 因为buy2是buy完stock2剩下的钱 + sell stock2的钱prices[i],就是我们最后的钱 we make this max.
+So sell2 is the most money we can have.
+*/
+class Solution {
+    public int maxProfit(int[] prices) {
+        int sell1 = 0, sell2 = 0, buy1 = Integer.MIN_VALUE, buy2 = Integer.MIN_VALUE;
+        for (int i = 0; i < prices.length; ++i) {
+            buy1 = Math.max(buy1, -prices[i]);   // The maximum if we've just buy  1st stock so far.
+            sell1 = Math.max(sell1, prices[i] + buy1);
+            buy2 = Math.max(buy2, sell1 - prices[i]);
+            sell2 = Math.max(sell2, buy2 + prices[i]);   // The maximum if we've just sold 2nd stock so far.
+        }
+        return sell2;
+    }
+}
