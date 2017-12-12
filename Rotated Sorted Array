@@ -1,0 +1,57 @@
+/**题目：
+Suppose an array sorted in ascending order is rotated at some pivot unknown to you beforehand.
+
+(i.e., 0 1 2 4 5 6 7 might become 4 5 6 7 0 1 2).
+
+You are given a target value to search. If found in the array return its index, otherwise return -1.
+
+You may assume no duplicate exists in the array.
+*/
+
+
+//Method1: Binary Search, time = O(logn), space = O(1)
+/**思路：
+* When rotating the array, there must be one half of the array that is still in sorted order.
+* When doing binary search, we can make a judgement that which part is ordered and whether the target is in that range
+* If yes, continue the search in that half, if not continue in the other half.
+*/
+class Solution {
+    public int search(int[] nums, int target) {
+        //Binary Search: time complexity = O(longN)
+        
+        if (nums == null || nums.length == 0) {
+            return -1;
+        }
+        
+        int start = 0, end = nums.length - 1;
+
+       while (start + 1 < end) {
+           int mid = start + (end - start) / 2;
+           if (nums[mid] == target) {
+               return mid;
+           }
+           if (nums[start] < nums[mid]) {   //这行千万别忘了写！！！代表前半段都是ascending order
+               //if target is at the left side
+               if (nums[start] <= target && target <= nums[mid]) {
+                   end = mid;
+               } else {
+                   start = mid;
+               }
+           } else {   //if target is at right side
+               if (nums[mid] <= target && target <= nums[end]) {
+                   start = mid;
+               } else {
+                   end = mid;
+               }
+           }
+       }
+        
+       if (nums[start] == target) {
+           return start;
+       } 
+       if (nums[end] == target) {
+           return end;
+       }
+        return -1;
+    }
+}
