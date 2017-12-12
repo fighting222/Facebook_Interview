@@ -1,0 +1,54 @@
+/**题目：
+Given a string, determine if a permutation of the string could form a palindrome.
+
+For example,
+"code" -> False, "aab" -> True, "carerac" -> True.
+
+
+*/
+
+
+
+//Method1: HashSet, time = O(n), space = O(n) ->  The setset can grow upto a maximum size of n in case of all distinct elements
+//思路：if String is even length -> set.size() = 0. if the String length is odd -> set.size() = 1 是palindrome
+class Solution {
+    public boolean canPermutePalindrome(String s) {
+        if (s == null || s.length() == 0) {
+            return false;
+        }
+        
+        Set<Character> set = new HashSet<>();
+        for (int i = 0; i < s.length(); ++i) {
+            if (set.contains(s.charAt(i))) {
+                set.remove(s.charAt(i));
+            } else {
+                set.add(s.charAt(i));
+            }
+        }
+        return set.size() <= 1;   
+    }
+}
+
+
+//Method2: Single Path, time = O(n), space = O(128) ->  A map of constant size(128) is used
+/**思路：
+we traverse over ss and update the number of occurences of the character just encountered in the map. When we update any entry in map, we also check if its value becomes even or odd.
+1) If the value of the entry just updated in mapmap happens to be odd, we increment the value of count to indicate that one more character with odd number of occurences has been found. 
+2)  if this entry happens to be even, we decrement the value of count to indicate that the number of characters with odd number of occurences has reduced by one.
+最后：At the end, we again check if the value of count is lesser than 2 -> a possible palindrome of input String
+*/
+class Solution {
+    public boolean canPermutePalindrome(String s) {
+        int[] map = new int[128];
+        int count = 0;   //check the occurance of each character
+        for (int i = 0; i < s.length(); i++) {
+            map[s.charAt(i)]++;
+            if (map[s.charAt(i)] % 2 == 0) {
+                count--;
+            } else {
+                count++;
+            }
+        }
+        return count <= 1;
+    }
+}
