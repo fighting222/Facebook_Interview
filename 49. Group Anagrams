@@ -1,0 +1,80 @@
+/**题目：
+Given an array of strings, group anagrams together.
+
+For example, given: ["eat", "tea", "tan", "ate", "nat", "bat"], 
+Return:
+
+[
+  ["ate", "eat","tea"],
+  ["nat","tan"],
+  ["bat"]
+]
+*/
+
+
+
+//说Method1!!!!!!好理解
+
+//Anagram:由相同字母组成，顺序不同
+//对每个组选定标准，将string用char进行排序: 按照自然顺序排序 eat -> aet, ate -> aet, tea -> ate，所以我们知道aet是eat, ate, tea这一组的标志,用hashMap用key记录aet这个标志,指向List<string>存：eat，ate, tea
+//当完成hashMap之后，提取出hashMap中的value作为return，所以遍历hashMap。 After we build the hashMap, the value of the HashMap will be our return
+/**说：For every string, convery in to characters array and sort
+* So strings within the same group can be seen as a same string
+* Create a map, and use the same string as a key, use List<String> to store grouped group anagrams as value
+* Generate result based on value of the map
+/**Time Complexity: O(NKlog(K) ), where N is the length of strs, and K is the maximum length of a string in strs. The outer loop has complexity O(N) as we iterate through each string. Then, we sort each string in O(KlogK) time.
+Space Complexity: O(N*K), the total information content stored in ans.
+*/
+class Solution {
+    public List<List<String>> groupAnagrams(String[] strs) {
+        List<List<String>> results = new ArrayList<>();
+        
+        if (strs == null || strs.length == 0) {
+            return results;
+        }
+        HashMap<String, List<String>> map = new HashMap<>();
+        for (String s : strs) {
+            char[] curr = s.toCharArray();  //遍历s中的每一个string，然后把它变成char array再进行排序
+            Arrays.sort(curr);
+            String keyStr = String.valueOf(curr);
+            if (!map.containsKey(keyStr)) {
+                map.put(keyStr, new ArrayList<String>());  //如果map里面没有，新建一组keyStr的pair
+            } 
+            map.get(keyStr).add(s);  //如果map里面已经有keyStr，就把string s加入当前keyStr对应的List上
+        }
+        //The values() method is used to return a Collection view of the values contained in this map.
+        return new ArrayList<List<String>>(map.values());
+    }
+}
+
+
+//Method2: Group by count,  time = O(n*k), n: str.length(), k: the max length of string in str
+//space = O(n * k) -> used to store res
+/**思路：
+key idea: Two strings are anagrams if and only if their character counts (respective number of occurrences of each character) are the same
+*/
+class Solution {
+    public List<List<String>> groupAnagrams(String[] strs) {
+        if (strs.length == 0) {
+            return new ArrayList();
+        }
+        
+        Map<String, List> ans = new HashMap<String, List>();
+        int[] count = new int[26];
+        
+        for (String s : strs) {
+            Arrays.fill(count, 0);
+            for (char c : s.toCharArray()) count[c - 'a']++;
+            
+            StringBuilder sb = new StringBuilder("");
+            for (int i = 0; i < 26; i++) {
+                sb.append('#');
+                sb.append(count[i]);
+            }
+            String key = sb.toString();
+            if (!ans.containsKey(key)) ans.put(key, new ArrayList());
+            ans.get(key).add(s);
+        }
+        return new ArrayList(ans.values());
+    }
+}
