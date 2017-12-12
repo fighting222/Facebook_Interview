@@ -1,0 +1,26 @@
+//time = O(m + n), space = O(m + 1)
+//Iterative
+/**思路：
+*Starting from right -> left, which means that we will begin add two strings from their least-sifnigicant digits, Because of ASCII value, each character is converted to integer by the minus '0', 
+If the shorter string is exhausted first, we can use 0 to fill the rest space(the value will be forced to `0` as default from there onwards).如果当前位超过了最大的长度，补0即可
+Sum for current position is conveniently calculated and a modulus of `10` will extract the digit portion in case the sum is bigger than 10. Carry in is extracted by flooring the number after division by `10`.果当前位的结果大于或等于10，则先将当前位的数值除以10加入下一位，当前位的值为取10的模 http://blog.csdn.net/bitcarmanlee/article/details/51774423
+*/
+class Solution {
+    public String addStrings(String num1, String num2) {
+        int i = num1.length() - 1;
+        int j = num2.length() - 1;
+        int carry = 0;
+        char[] nums1Array = num1.toCharArray();
+        char[] nums2Array = num2.toCharArray();
+        StringBuilder sb = new StringBuilder();
+        
+        while (i >= 0 || j >= 0 || carry == 1) {
+            int a = i >= 0 ? (nums1Array[i--] - '0') : 0;
+            int b = j >= 0 ? (nums2Array[j--] - '0') : 0;
+            int sum = a + b + carry;
+            sb.insert(0, sum % 10);  //一直插入0位子，之前的数会顺序后挪
+            carry = sum / 10;
+        }
+        return sb.toString();
+    }
+}
