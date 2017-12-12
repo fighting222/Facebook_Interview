@@ -1,0 +1,138 @@
+/**题目:
+Given two words (beginWord and endWord), and a dictionary's word list, find the length of shortest transformation sequence from beginWord to endWord, such that:
+
+Only one letter can be changed at a time.
+Each transformed word must exist in the word list. Note that beginWord is not a transformed word.
+For example,
+
+Given:
+beginWord = "hit"
+endWord = "cog"
+wordList = ["hot","dot","dog","lot","log","cog"]
+As one shortest transformation is "hit" -> "hot" -> "dot" -> "dog" -> "cog",
+return its length 5.
+
+Note:
+Return 0 if there is no such transformation sequence.
+All words have the same length.
+All words contain only lowercase alphabetic characters.
+You may assume no duplicates in the word list.
+You may assume beginWord and endWord are non-empty and are not the same.
+*/
+
+
+
+//BFS，小本本第8页！！！！！
+class Solution {
+    //构建hashMap，key是wordList里面的string，List<Stirng>是string所对应的所有改变一个位置char的string
+    Map<String, List<String>> map = new HashMap<>();
+//buildMap: time = O(n^2), n is the length of wordList，这部分可以优化到O(n)！！看word ladder II
+    private void buildMap(String beginWord, List<String> wordList) { 
+        for (String str : wordList) {
+            List<String> nlist = new ArrayList<>();
+            map.put(str, nlist);  //对每一个string的时候，先把一个空的list加给他，所以可能出现，key对空string(value)的情况
+            for (String nxt : wordList) {
+                if (diff(str, nxt) == 1) {  //如果两个string相差一个char
+                    map.get(str).add(nxt);
+                }
+            }
+        }
+        //如果beginWord不在wordList里面，也需要把beginWord和他在wordList里面对应可能转换的List加进map中
+        if (!map.containsKey(beginWord)) {
+            List<String> nlist = new ArrayList<>();
+            map.put(beginWord, nlist);
+            for (String str : wordList) {
+                if (diff(beginWord, str) == 1) {
+                    map.get(beginWord).add(str);
+                }
+            }
+        }
+    }
+    
+    private int diff(String s1, String s2) {
+        int count = 0;
+        for (int i = 0; i < s1.length(); ++i) {
+            if (s1.charAt(i) != s2.charAt(i)) {
+                count++;
+            }
+        }
+        return count;
+    }
+    
+    //这个是最开始的function
+    public int ladderLength(String beginWord, String endWord, List<String> wordList) {
+        if (beginWord.equals(endWord)) {
+            return 0;
+        }
+        
+        buildMap(beginWord, wordList);
+        //避免重复；例如：看小本本！！！（第8页） 
+        Set<String> doneSet = new HashSet<>();   //存已经处理过的单词
+        Queue<String> queue = new LinkedList<>();   //存要处理的单词
+        
+        doneSet.add(beginWord);
+        queue.offer(beginWord);
+        int step = 1;
+        while(queue.size() != 0) {
+            int size = queue.size();
+            for (int i = 0; i < size; ++i) {
+                String curr = queue.poll();
+                if (curr.equals(endWord)) {
+                    return step;
+                }
+                //这里不用判断if (map.containsKey(curr))，因为题目说了一定会有解
+                List<String> nxtStrList = map.get(curr);
+                for (String nxtStr : nxtStrList) {
+                    if (!doneSet.contains(nxtStr)) {  //curr得下一个状态还没有处理过
+                        queue.offer(nxtStr);
+                        doneSet.add(nxtStr);
+                    }
+                }
+            }
+            step++;
+        }
+        return 0;
+    }
+}
+
+
+//follow up: print a valid path
+class WordLadder {
+    public List<String> findLadder(String start, String end, Set<String> dict) {
+        Queue<String> queue = new LinkedList<>();
+        HashMap<String, String> path = new HashMap<>();
+        List<String> result = new ArrayList<>();
+        queue.offer(start);
+        path.put(start, "");
+        while (!queue.isEmpty()) {
+            String word = queue.poll();
+            for (int i = 0; i < word.length(); i++) {
+                for (char c = 'a'; c <= 'z'; c++) {
+                    if (word.charAt(i) == c) {
+                        continue;
+                    }
+                    String newWord = word.substring(0, i) + c + word.substring(i + 1);
+                    if (newWord.equals(end)) {
+                        path.put(end, word);
+                        break;
+                    }
+                    if (dict.contains(newWord) && !path.containsKey(newWord)) {
+                        path.put(newWord, word);
+                        queue.offer(newWord);
+                    }
+                }
+            }
+        }
+        if (!path.containsKey(end)) {
+            return result;
+        }
+        String mover = end;
+        while (!path.get(mover).equals("")) {
+            result.add(mover);
+            mover = path.get(mover);
+        }
+        result.add(start);
+        Collections.reverse(result);
+        return result;
+    }
+}
