@@ -15,6 +15,11 @@ You may assume no duplicate exists in the array.
 * When doing binary search, we can make a judgement that which part is ordered and whether the target is in that range
 * If yes, continue the search in that half, if not continue in the other half.
 */
+
+//!!!!!!!写第二种写法！！！！！
+
+
+//第一种写法
 class Solution {
     public int search(int[] nums, int target) {
         //Binary Search: time complexity = O(longN)
@@ -54,4 +59,3 @@ class Solution {
        }
         return -1;
     }
-}
