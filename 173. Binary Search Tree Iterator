@@ -1,0 +1,76 @@
+/**题目：
+Implement an iterator over a binary search tree (BST). Your iterator will be initialized with the root node of a BST.
+
+Calling next() will return the next smallest number in the BST.
+
+Note: next() and hasNext() should run in average O(1) time and uses O(h) memory, where h is the height of the tree.
+*/
+
+
+/**
+ * Definition for binary tree
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+/**题目大意：就是把BST从小到大打印出来: using stack to do Binary Tree Inorder traversal
+实现一个二叉搜索树（BST）的迭代器。你的迭代器会使用BST的根节点初始化。
+调用next()会返回BST中下一个最小的数字。
+注意：next()和hasNext()应该满足平均O(1)时间复杂度和O(h)空间复杂度，其中h是树的高度。
+*/
+//需维护一个栈，从根节点开始，每次迭代地将根节点的左孩子压入栈，直到左孩子为空为止。
+//调用next()方法时，弹出栈顶，如果被弹出的元素拥有右孩子，则以右孩子为根，将其左孩子迭代压栈
+
+/**思路：
+而这题是要做一个迭代器，返回当前指向的值，其实就是求上次返回的节点的下一个，本质是一样的。题目要求最多只能用O(H)的空间，
+所以思路也和那题一样，用一个Stack记录从根节点到当前节点的路径。next的时候就返回Stack最上面的元素。不过拿出最上面的元素后，
+我们还要看一下这个被返回的元素是否有右节点，如果有的话，就把它的右节点及右节点的所有左边节点都压入栈中。另外，初始化栈时，我们要找到最左边的节点，
+也就是中序遍历的第一个节点，并把根到第一个节点的路径都压入栈
+When you get to a TreeNode, in order to get the smallest, you need to go all the way down its left branch. 
+So our first step is to point to pointer to the left most TreeNode. After returning the smallest TreeNode, 
+I need to point the pointer to the next smallest TreeNode. 
+When the current TreeNode has a right branch (It cannot have left branch, remember we traversal to the left most), 
+we need to jump to its right child first and then traversal to its right child's left most TreeNode.
+When the current TreeNode doesn't have a right branch, it means there cannot be a node with value smaller than itself 
+father node, point the pointer at its father node. So, in order to do this, I need use a Stack
+*/
+
+
+
+//Method1-1: In-Order
+public class BSTIterator {
+    
+    Stack<TreeNode> stk;
+
+    public BSTIterator(TreeNode root) {
+        stk = new Stack<TreeNode>();
+        // 先找到第一个节点，并把路径入栈
+        while(root != null){
+            stk.push(root);
+            root = root.left;
+        }
+    }
+
+    public boolean hasNext() {
+        // 栈为空时不再有下一个
+        return !stk.isEmpty();
+    }
+
+    public int next() {
+        // 栈顶是待返回元素
+        TreeNode curr = stk.pop();
+        int res = curr.val;
+        // 如果该元素有右节点，把它的右节点及右节点的所有左边节点都压入栈中
+        if(curr.right != null){
+            curr = curr.right;
+            while(curr != null){
+                stk.push(curr);
+                curr = curr.left;
+            }
+        }
+        return res;
+    }
+}
