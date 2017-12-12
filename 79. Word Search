@@ -1,0 +1,82 @@
+/**题目：
+Given a 2D board and a word, find if the word exists in the grid.
+
+The word can be constructed from letters of sequentially adjacent cell, where "adjacent" cells are those horizontally or vertically neighboring. The same letter cell may not be used more than once.
+
+For example,
+Given board =
+
+[
+  ['A','B','C','E'],
+  ['S','F','C','S'],
+  ['A','D','E','E']
+]
+word = "ABCCED", -> returns true,
+word = "SEE", -> returns true,
+word = "ABCB", -> returns false.
+*/
+
+
+/**DFS: Backtracking: Recursion
+* adjacent: (x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)
+*不可以重复visit一个点
+*例如查找ABC，从2D board里面任意一个位置开始查找看是否可以组成：1，对于任意一个位置先看是否等于字符串ABC的第一个位置A，如果不相同，换下一个位置，如果相同，看位置的上下左右四个方向有没有和B相等的，注意不能重复访问已经用过的位置
+*处理是否visited，我们建立一个同样大小的boolean[][]用trueh,false来表示位置是否访问过，如果访问过标记为true，
+* // Time: So the worst time complexity is O(n*m * 4^L). since we are recursively traversing the 4 adjacent cells at each step 遍历整个m * n 的board的时间复杂度为m * n,对于每个点都会往上下左右来遍历寻找， L为word长度，大概要遍历4^L次，所以总的时间复杂度大概在mn4^L.
+    //Space： 由于word长度为k，recursive space大概在O(k).
+*/
+class Solution {
+    public boolean exist(char[][] board, String word) {
+        if (board == null || board.length == 0) {
+            return false;
+        }
+        
+        if (word.length() == 0) {
+            return true;
+        }
+        
+        boolean[][] visited = new boolean[board.length][board[0].length];
+        for (int row = 0; row < board.length; ++row) {
+            for (int col = 0; col < board[0].length; ++col) {
+                if (helper(board, visited, word.toCharArray(), 0, row, col)) {
+                    return true;   //从当前位board[row][col]开始，能够找到word
+                }
+            }
+        }
+        return false;
+    }
+    
+    private boolean helper(char[][] board, boolean[][] visited, char[] word, 
+                           int index, int  row, int col ) {    //当先要找字符的在word中的位子
+        if (index == word.length) {
+            return true;    //word中所有的字符都已经被找到
+        }
+        
+        //当位置out of bound时候
+        if (row < 0 || row >= board.length || col < 0 || col >= board[0].length) {
+            return false;
+        }
+        
+        if (visited[row][col] == true || board[row][col] != word[index]) {   //现在位置的点已经visited，或者位置和word里面的不一样
+            return false;
+        }
+        
+        visited[row][col] = true;   //这个点已经visited(这个点和word里面相同)，开始看他的上下左右
+        //right
+        boolean exist = helper(board, visited, word, index + 1, row, col + 1); 
+        if (exist) return true;   //如果一个方向找到了，就不再看其他方向
+        //left
+        exist = helper(board, visited, word, index + 1, row, col - 1);
+        if (exist) return true;
+        //down
+        exist = helper(board, visited, word, index + 1, row - 1, col);
+        if (exist) return true;
+        //up
+        exist = helper(board, visited, word, index + 1, row + 1, col);
+        if (exist) return true;
+        
+        //如果当前点的上下左右都没有找到，当前点的标记就要从true变成false，因为不可能从当前点开始找到和word一样的了 -> 当前点不是有效点，在找另外一个位置开始的时候，可能还会需要这个点
+        visited[row][col] = false;
+        return false;
+     }
+}
