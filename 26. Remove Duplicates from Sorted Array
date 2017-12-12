@@ -1,0 +1,48 @@
+/** 譬如一个数组为1，1，2，3，首先i = 1，j = 0，这时候A[i] = A[j]，于是递增i，碰到2，不等于1，此时设置A[j + 1] = A[i]，也就是A[1] = A[2]，递增i和j为3和1，这时候A[3] != A[1]，设置A[j + 1] = A[i]，也就是A[2] = A[3]，再次递增，遍历结束。这时候新的数组长度就为2 + 1，也就是3。
+//move the pointer and update the value only when the nums are different
+//if it's an unsorted array,use hashset(one pass with an index,if !contains,update nums[index++])可以用O(N)空间得到O(N)的时间
+//or sort(then use above algo)time:O(NlogN)
+
+*/
+//time = O(n), space = O(1)
+//解释：中心思想：because the input array is sorted, so we can use two pointers to move all distinct numbers to the front of the array. 
+//we can use two pointers, slow and fast both starting from the second position, which is index = 1, because the first number must be counted into our result, then we will increment the fast pointer to find the first number, which is different with the previous one, and then move that number to the position pointed by the slow pointer. 
+class Solution {
+    public int removeDuplicates(int[] nums) {
+        if (nums == null || nums.length == 0) {
+            return 0;
+        }
+//loop nums,if当前元素没有出现过，放到前面去
+        //注意i = 1开始，相当于2 pointers
+        //从slow = 1，第二个数字开始是因为第一个数字肯定在那里，不会重复
+        int slow = 1;   //下一个数放在那里
+        for (int fast = 1; fast < nums.length; ++fast) {   //fast: 当前处理的数
+            if (nums[fast - 1] != nums[fast]) {
+                nums[slow++] = nums[fast];  //先做完nums[index] = nums[i]之后再index + 1
+            }
+        }
+        return slow;    //当前slow pointer指的位置之前的数字就是不重复的，slow = 要返回的size
+    }
+}
+
+
+//follow up: Remove Duplicates from Unsorted Array, time = O(n), space = O(n)
+class Solution {
+    public int removeDuplicates(int[] nums) {
+        if (nums == null || nums.length == 0) {
+            return 0;
+        }
+        
+        Set<Integer> set = new HashSet<>();
+        int index = 0;  //count the number of distinct elements
+        for (Integer i : nums) {
+            if (!set.contains(i)) {
+                nums[index++] = i;  //修改了nums，index前面的值都变成了distinct，但是后面的值就不管了，这个和上一个方法后面的值都是重复的不一样
+                set.add(i);
+            }
+        }
+        return index;
+    }
+}
+
+
