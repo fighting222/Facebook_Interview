@@ -1,0 +1,62 @@
+/**题目：
+Given a string s, find the longest palindromic substring in s. You may assume that the maximum length of s is 1000.
+
+Example:
+
+Input: "babad"
+
+Output: "bab"
+
+Note: "aba" is also a valid answer.
+Example:
+
+Input: "cbbd"
+
+Output: "bb"
+*/
+
+
+
+//DP
+/**思路：1，每一个单独的char都是一个palindrome，2. 两个char要相同，例如aa，3，多个字符的char，首尾要相同，并且中间夹的是一个palindrome
+*需要一个boolean[n][n] isPalindrom (n = s.length()), boolean[i][j]表示，从index i 到 j的一个substring是不是palindrome。例如s = "abcbd", boolean[0][3]是指字符"abcb"，他不是palindrome -> false
+* initialize: 两种对称情况，1.以中心字符对称 2.以中间两个字符对称，所以：1. boolean[i][i] = true(所有的单个字符) 2.判断boolean[i][i + 1]两个相邻的字符是否相同，相同 = true，不同 = false；3.有三个以上字符：boolean[i][j] = false if char[i] != char[j], else我们判断boolean[i+1][j-1]
+* 题目要求longest palindrom，加一个判断语句：在boolean[i][j] == true时，我们判断，新的得到的长度（j - i）是否比现有的小
+*/
+//time = O(n^2), space = O(n^2)
+/**区间类动态规划
+
+Time O(n^2), Space O(n^2)
+用dp[i][j]来存DP的状态，需要较多的额外空间: Space O(n^2)
+DP的4个要素
+状态：
+dp[i][j]: s.charAt(i)到s.charAt(j)是否构成一个Palindrome
+转移方程：
+dp[i][j] = s.charAt(i) == s.charAt(j) && (j - i <= 2 || dp[i + 1][j - 1])
+初始化：
+dp[i][j] = true when j - i <= 2
+结果
+找 maxLen = j - i + 1;，并得到相应longest substring： longest = s.substring(i, j + 1);
+*/
+class Solution {
+    public String longestPalindrome(String s) {
+        int len = s.length();
+        String res = null;
+    
+        boolean[][] dp = new boolean[len][len];
+        //i is the start point of the palindrome
+        for (int i = len - 1; i >= 0; i--) {
+            for (int j = i; j < len; j++) {
+//判断boolean[i][i + 1]两个相邻的字符是否相同，相同 = true，不同 = false；3.有三个以上字符：boolean[i][j] = false if char[i] != char[j], else我们判断boolean[i+1][j-1]
+                dp[i][j] = s.charAt(i) == s.charAt(j) && (j - i < 3 || dp[i + 1][j - 1]);
+            //在boolean[i][j] == true时，我们判断，新的得到的长度（j - i）是否比现有的小
+                if (dp[i][j] && (res == null || j - i + 1 > res.length())) {
+                    res = s.substring(i, j + 1);
+                }
+            }
+        }
+    
+        return res;
+    }
+}
+
