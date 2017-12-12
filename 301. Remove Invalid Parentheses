@@ -57,7 +57,7 @@ class Solution {
 //follow up: 返回任意一个可能结果, time = O(2n), space = O(2n)
 /**给一个字符串，里面有小括号和各种字符，remove最少次数得到一个括号匹配的字符串。
 
-two pass.
+Method1: two pass.
 用两个变量， int left, int right.
 从头扫第1遍的时候， 加进去所有left,如果right不大于left, 就加进去stringbuilder。这样保证“)”都有相对应的"("。
 第2遍，从第1次的stringbuilder的末尾扫，加进去所有 )， 如果left 不大于 right, 加进去所有 (。 
@@ -99,5 +99,38 @@ class Solution {
         }
 
         return sb.reverse().toString();
+    }
+}
+
+
+//Follow up1: Method2: 只扫描一遍，用stack存储invalid括号的位置，最后把invalid的括号删除就可以了
+//time = O(n), space = O(n)
+class Solution {
+    public static String removeInvalid(String input) {
+        Stack<Integer> stack = new Stack<Integer>();
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            if (c == '(') {
+                stack.push(i);
+            } else if (c == ')') {
+                if (stack.isEmpty() || input.charAt(stack.peek()) != '(') {
+                    stack.push(i);
+                } else {
+                    stack.pop();
+                }
+            }
+        }
+
+        StringBuilder sb = new StringBuilder(input);
+        while (!stack.isEmpty()) {   //删除stack中储存的invalid 括号
+            sb.deleteCharAt(stack.pop());
+        }
+        return sb.toString();
+    }
+
+    public static void main(String[] args) {
+        String s = "(a))";
+        String res = removeInvalid(s);
+        System.out.print(res);
     }
 }
