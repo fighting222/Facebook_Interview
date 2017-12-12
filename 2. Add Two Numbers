@@ -1,0 +1,105 @@
+/**题目：
+You are given two non-empty linked lists representing two non-negative integers. The digits are stored in reverse order and each of their nodes contain a single digit. Add the two numbers and return it as a linked list.
+
+You may assume the two numbers do not contain any leading zero, except the number 0 itself.
+
+Example
+
+Input: (2 -> 4 -> 3) + (5 -> 6 -> 4)
+Output: 7 -> 0 -> 8
+Explanation: 342 + 465 = 807.
+*/
+
+
+
+
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) { val = x; }
+ * }
+ */
+/**思路:
+* Because the digits are stored in reverse order, so we can begin by summing the least-significant digits, which is the head of l1 and l2. Since each digit is in the range of 0…9, summing two digits may "overflow". For example 5 + 7 = 14. In this case, we set the current digit to be 4 and bring over the carry=1 to the next iteration. And we also know that the carry must be either 0 or 1 because the largest possible sum of two digits (including the carry) is 9 + 9 + 1 = 19. Whenever one of the two ListNode is null, replace it with 0
+Time complexity : O(max(m,n)). Assume that m and n represents the length of l1 and l2 respectively, the algorithm above iterates at most max(m,n) times.
+
+Space complexity : O(max(m,n)). The length of the new list is at most max(m,n)+1.
+*/
+//Method1: 简洁的写法
+//!!!!要说这个：Whenever one of the two ListNode is null, replace it with 0.
+class Solution {
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode dummy = new ListNode(0);
+        ListNode head = dummy;
+        int carry = 0;
+        while (l1 != null || l2 != null || carry != 0) {
+            ListNode curr = new ListNode(0);
+            int sum = (l1 != null ? l1.val : 0) + (l2 != null ? l2.val : 0) + carry;
+            curr.val = sum % 10;   //current position digit
+            carry = sum / 10;
+            head.next = curr;
+            head = curr;
+            
+            l1 = (l1 == null) ? l1 : l1.next;
+            l2 = (l2 == null) ? l2 : l2.next;
+        }
+        return dummy.next;
+    }
+}
+//Method2: 不简洁的写法！
+class Solution {
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        if (l1 == null && l2 == null) {
+            return null;
+        }
+        
+        ListNode dummy = new ListNode(0);
+        ListNode curr = dummy;
+        int carry = 0;
+        
+        while (l1 != null && l2 != null) {
+            int sum = l1.val + l2.val + carry;
+            int digit = sum % 10;   //current position
+            carry = sum / 10;
+            ListNode n = new ListNode(digit);
+            
+            curr.next = n;
+            curr = n;
+            
+            l1 = l1.next;
+            l2 = l2.next;
+        }
+        
+        while (l1 != null) {
+            int sum = l1.val + carry;
+            int digit = sum % 10;
+            carry = sum / 10;
+            ListNode n = new ListNode(digit);
+            
+            curr.next = n;
+            curr = n;
+            
+            l1 = l1.next;
+        }
+        while (l2 != null) {
+            int sum = l2.val + carry;
+            int digit = sum % 10;
+            carry = sum / 10;
+            ListNode n = new ListNode(digit);
+            
+            curr.next = n;
+            curr = n;
+            
+            l2 = l2.next;
+        }
+        
+        if (carry > 0) {
+            ListNode n = new ListNode(1);
+            //这个是处理进位的，若需要增加一个节点进位，也只可能是进10，所以是1
+            curr.next = n;
+        }
+        return dummy.next;
+    }
+}
