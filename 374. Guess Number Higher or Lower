@@ -1,0 +1,24 @@
+/* The guess API is defined in the parent class GuessGame.
+   @param num, your guess
+   @return -1 if my number is lower, 1 if my number is higher, otherwise return 0
+      int guess(int num); */
+
+//Binary Search
+public class Solution extends GuessGame {
+    public int guessNumber(int n) {
+        int start = 1, end = n;
+        //这里不能是start + 1 < end，因为n可能是我的guess，和first bad number不一样，因为n之前一定已经出现过bad number
+        while (start <= end) {
+            int mid = start + (end - start) / 2;
+            int result = guess(mid);
+            if (result == 0) {
+                return mid;
+            } else if (result == -1) {   //myNumber < mid return -1, which means that mid is greater than myNumber
+                end = mid -1 ; 
+            } else {
+                start = mid + 1;
+            }
+        }
+        return -1;
+    }
+}
