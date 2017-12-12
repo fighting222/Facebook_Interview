@@ -1,0 +1,50 @@
+/**题目：
+Implement strStr().
+
+Return the index of the first occurrence of needle in haystack, or -1 if needle is not part of haystack.
+
+Example 1:
+
+Input: haystack = "hello", needle = "ll"
+Output: 2
+Example 2:
+
+Input: haystack = "aaaaa", needle = "bba"
+Output: -1
+*/
+
+
+/** 题目意思：For a given source string and a target string, you should output the first index(from 0) of 
+target string in source string.
+If target does not exist in source, just return -1.
+eg: If haystack = "source" and needle = "target", return -1.
+If source = "abcdabcdefg" and target = "bcd", return 1.
+*/
+
+//time = O(n^2)
+//two pointer, i and j, use i to keep track the index of first occurance, if needle exist in haystack, 
+//use j to check if the whole needle is included in haystack
+class Solution {
+    public int strStr(String haystack, String needle) {
+        if (haystack == null || needle == null) {
+            return -1;
+        }
+        
+        if (haystack.length() < needle.length()) {
+            return -1;
+        }
+ //因为haystack中除去haystack.length() - needle.length() + 1，剩下部分的长度 < needl.length不可能再找到了  
+        for (int i = 0; i < haystack.length() - needle.length() + 1; ++i) {  
+            int j = 0;
+            for (j = 0; j < needle.length(); ++j) {
+                if (needle.charAt(j) != haystack.charAt(i + j)) {
+                    break;
+                }
+            }
+            if (j == needle.length()) {  //needle已经loop完了
+                return i;
+            }
+        }
+        return -1;
+    }
+}
