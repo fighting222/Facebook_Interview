@@ -1,0 +1,180 @@
+//divide nums into three groups
+//time = O(n), space = O(1)\
+/** 考虑到题目要求one pass。这就意味着类似于链表的双指针问题，这里也要track两个index，一个是red的index，一个是blue的index，两边往中间走。
+
+i从0到blue index扫描，
+遇到0，放在red index位置，red index后移；
+遇到2，放在blue index位置，blue index前移；
+遇到1，i后移。
+*/
+//Method1: Two Pointers
+class Solution {
+    public void sortColors(int[] nums) {
+        if (nums == null || nums.length <= 1) {  //只有一种颜色的时候，不用排序
+            return;
+        }
+        
+        int left = 0, right = nums.length - 1;
+        int i = 0;
+        
+        while (i <= right) {   //因为right index右边已经都check过了
+            if (nums[i] == 1) {  // 遇到1跳过 
+                ++i;
+            } else if (nums[i] == 0) {  // 遇到0交换到前面
+                swap(nums, left, i);
+                ++left;
+                ++i;
+            } else {  // 遇到2交换到后面
+                swap(nums, i, right);
+                --right;
+            }
+        }
+    }
+    
+    private void swap(int[] nums, int left, int right) {
+        int temp = nums[left];
+        nums[left] = nums[right];
+        nums[right] = temp;
+    }
+}
+
+//follow up0: sort k colors, time = O(n^2), space = O(1)
+/**思路：Two Pointers
+第二种则是利用两个指针的方法，设定pl和pr，左右两个指针，初始位置分别为数组两端，pl = 0, pr = colors.length - 1. 同时，由于题目限制条件，已知min和max，因此可以据此作为比较，来决定如何移动pl，pr两个指针。不断对满足min和max条件的colors进行swap，就可以在in-place的条件下，做到sorting colors，这种算法的空间复杂度为O(1), 而时间复杂度：这种方法的时间复杂度为O(n^2): T(n) = T(n - 2) + n。
+*/
+void sortColors2(int[] colors, int k) {
+        int pl = 0;
+        int pr = colors.length - 1;
+        int i = 0;
+        int min = 1, max = k;
+        while (min < max) {
+            while (i <= pr) {
+                if (colors[i] == min) {
+                    swap(colors, pl, i);
+                    i++;
+                    pl++;
+                } else if (colors[i] == max) {
+                    swap(colors, pr, i);
+                    pr--;
+                } else {
+                    i++;
+                }
+                // printArray(colors);
+            }
+            i = pl;
+            min++;
+            max--;
+        }
+    }
+
+    private void swap(int[] colors, int i, int j) {
+        int temp = colors[i];
+        colors[i] = colors[j];
+        colors[j] = temp;
+    }
+
+
+//Follow up1: sort k colors, time = O(n), space = O(1)
+// below:each time sort min&max, then sort middle part's min&max, until we sort all min&max, O(n) time, O(1) space
+class Solution {
+    public void sortColors2(int[] colors, int k) {
+        if (colors == null || colors.length <= 1 || k == 1) {
+            return;
+        }
+        int left = 0;
+        int right = colors.length - 1;
+        while (left < right) {
+            int max = Integer.MIN_VALUE;
+            int min = Integer.MAX_VALUE;
+            for (int i = left; i <= right; i++) {
+                max = Math.max(max, colors[i]);
+                min = Math.min(min, colors[i]);
+            }
+            int i = left;
+            while (i <= right) {
+                if (colors[i] == min) {
+                    swap(colors, i, left);
+                    left++;
+                    i++;
+                } else if (colors[i] > min && colors[i] < max) {
+                    i++;
+                } else {
+                    swap(colors, i, right);
+                    right--;
+                }
+            }
+        }
+    }
+    
+    private void swap(int[] colors, int a, int b) {
+        int temp = colors[a];
+        colors[a] = colors[b];
+        colors[b] = temp;
+    }
+}
+
+
+//follow up2: isHigh(), isMid(), isLow()
+public class Solution {
+    //如果是给的string，化成char[] 再做
+    //given three functions: isHigh(), isMid(), isLow()
+    //sort 3 categories in descending order
+    public void sortColors(int[] nums, int left, int right) {//we assume input left is 0 and right is nums.length - 1
+        if (nums == null || nums.length <= 1) {
+            return;
+        }
+        int i = left;
+        while (i <= right) {//should be i <= right, not i < nums.length !!!eg.[2, 2]; not i < right !!!eg.[1,0];
+            if (isLow(nums[i])) {
+                swap(nums, i, left);
+                left++;//left side of left pointer are all 0, between left & i are all 1
+                i++;//i++ cuz we know what we swap from left pointer is either 0 or 1, i's left side are all 0 and 1
+            } else if (isMid(nums[i])) {
+                i++;
+            } else {//isHigh(nums[i])
+                swap(nums, i, right);
+                right--;//we can't i++ cuz we don't know what we swapped from right pointer, so we still need to check later
+            }
+        }
+    }
+    
+    private void swap(int[] nums, int i, int j) {
+        int temp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = temp;
+    }
+}
+
+
+
+//follow up3: getCategory
+public class Solution {    
+    //int getCategory(int n), outputs the category(1 to k) of given n
+    //sort k categories in descending order
+    public void sortKColors(int[] nums, int k) {//we assume input left is 0 and right is nums.length - 1
+        if (nums == null || nums.length <= 1 || k <= 1) {
+            return;
+        }
+        int left = 0;
+        int right = nums.length - 1;
+        int min = 1;
+        int max = k;
+        while (left < right) {
+            int i = left;
+            while (i <= right) {
+                if (getCategory(nums[i]) == min) {
+                    swap(nums, i, left);
+                    left++;
+                    i++;
+                } else if (getCategory(nums[i]) > min && getCategory(nums[i]) < max) {
+                    i++;
+                } else {
+                    swap(nums, i, right);
+                    right--;
+                }
+            }
+            min++;
+            max--;
+        }
+    }
+}
