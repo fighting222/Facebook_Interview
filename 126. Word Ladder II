@@ -1,0 +1,123 @@
+/**题目：
+Given two words (beginWord and endWord), and a dictionary's word list, find all shortest transformation sequence(s) from beginWord to endWord, such that:
+
+Only one letter can be changed at a time
+Each transformed word must exist in the word list. Note that beginWord is not a transformed word.
+For example,
+
+Given:
+beginWord = "hit"
+endWord = "cog"
+wordList = ["hot","dot","dog","lot","log","cog"]
+Return
+  [
+    ["hit","hot","dot","dog","cog"],
+    ["hit","hot","lot","log","cog"]
+  ]
+*/
+
+
+
+//Method: BFS + DFS
+/**思路：time = O(n)
+BST to construct pathes, DFS to find the shoretest pathes
+1). Use BFS to find the shortest distance between the beginWord and endWord, we need to track the distance of intermediate processes(crossing nodes) from beginWord to endWord, and store the(current word's) next level neighbors a HashMap, so we can use it latter to find the shortest path;
+
+2). The we will do DFS to find out all shortest distance from the HashMap. During this process, we nned to compare is the distance of the next level equals the distance of current level + 1. This is because we want to make sure that the next word is the next level of current word, which means it's the shortest path.Since in BFS, we record both the next level nodes and the parent node as neighbors of current node. Otherwise, the next word can be one of the parent node of the current word, so it won't be the shortest path.
+*/
+class Solution {
+    public List<List<String>> findLadders(String beginWord, String endWord, List<String> wordList) {
+        //base case 
+        if (wordList == null) {
+            return null;
+        }
+        
+        Set<String> dict = new HashSet<>(wordList);  //store dictionary into HashMap
+        ArrayList<List<String>> res = new ArrayList<List<String>>();  //store our results
+        HashMap<String, Integer> distance = new HashMap<>();  //distance from beginWord to current word      
+        HashMap<String, ArrayList<String>> neighbors = new HashMap<>();   //store current word, and all its neighbors include parents and next level words
+        List<String> subSolution = new ArrayList<>();
+       
+        dict.add(beginWord);
+        bfs(beginWord, endWord, dict, neighbors, distance);
+        dfs(beginWord, endWord, dict, neighbors, distance, subSolution, res);
+        
+        return res;
+    }
+    
+    private void bfs (String start, String end, Set<String> dict, 
+                     Map<String, ArrayList<String>> curNeighbors,
+                     Map<String, Integer> distance) {
+        for (String str : dict) {   //initialize the curNeighbors
+            curNeighbors.put(str, new ArrayList<String>());
+        }
+        
+        Queue<String> queue = new LinkedList<String>();
+        queue.add(start);
+        distance.put(start, 0);
+        
+        //bfs
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            boolean foundEnd = false; //inialize we cannot transform from beginWord to endWord
+            for (int i = 0; i < size; ++i) {
+                String cur = queue.poll();  //get the current word
+                int curDistance = distance.get(cur);
+                List<String> neighbors = getNeighbors(cur, dict);  //get all neighbors for current word, including its parent and next level neightbos
+                for (String neighbor : neighbors) {
+                    curNeighbors.get(cur).add(neighbor);
+                    if (!distance.containsKey(neighbor)) {  // Check if visited
+                        distance.put(neighbor, curDistance + 1);
+                        if (end.equals(neighbor)) {   // Found the shortest path
+                            foundEnd = true;
+                        } else {
+                            queue.offer(neighbor);   //next to check next level
+                        }
+                    }
+                }
+                if (foundEnd) {
+                    break;
+                }
+            }
+        }
+    }
+    
+    // Find all next level nodes.  
+    private ArrayList<String> getNeighbors(String curWord, Set<String> dict) {
+        ArrayList<String> res = new ArrayList<String>();
+        char chs[] = curWord.toCharArray();
+        
+        for (char ch = 'a'; ch <= 'z'; ++ch) {
+            for (int i = 0; i < chs.length; ++i) {
+                if (chs[i] == ch) {
+                    continue;
+                }
+                char oldChar = chs[i];
+                chs[i] = ch;
+                if (dict.contains(String.valueOf(chs))) {
+                    res.add(String.valueOf(chs));
+                }
+                chs[i] = oldChar;
+            }
+        }
+        return res; 
+    }
+    
+    // DFS: output all paths with the shortest distance.
+    private void dfs(String curWord, String end, Set<String>dict, 
+                    HashMap<String, ArrayList<String>> curNeighbors,
+                    Map<String, Integer> distance,
+                    List<String> solution, List<List<String>> res) {
+        solution.add(curWord);
+        if (end.equals(curWord)) {   //find one answer
+            res.add(new ArrayList<String>(solution));
+        } else {
+            for (String next : curNeighbors.get(curWord)) {
+                if (distance.get(next) == distance.get(curWord) + 1) {  //make sure that the next word is the next level of current Node, it's not current word's parent word
+                    dfs(next, end, dict, curNeighbors, distance, solution, res);
+                }
+            }
+        }
+        solution.remove(solution.size() - 1);
+    }
+}
