@@ -1,0 +1,67 @@
+/**
+Given a string, determine if it is a palindrome, considering only alphanumeric characters and ignoring cases.
+
+For example,
+"A man, a plan, a canal: Panama" is a palindrome.
+"race a car" is not a palindrome.
+
+Note:
+Have you consider that the string might be empty? This is a good question to ask during an interview.
+
+For the purpose of this problem, we define empty string as valid palindrome.
+
+
+*/
+
+
+
+//time = O(n), space = O(1)
+//680 valid palindrom ii: 删除一个character使string是palindrome
+//思路：two pointers, start and end, check if the characters they are pointing to are same 
+class Solution {
+    /**
+     * @param s A string
+     * @return Whether the string is a valid palindrome
+     */
+    public boolean isPalindrome(String s) {
+        // Write your code here
+        
+        if (s == null || s.length() == 0) {
+            return true;
+        }
+        
+        int start = 0;
+        int end = s.length() - 1;
+        
+        while (start < end) {
+            //check if the start is alphnumeric character
+            while (start < s.length() && !isValid(s.charAt(start))) {
+                ++start;
+            }
+            
+            while (end >= 0 && !isValid(s.charAt(end))) {
+                --end;
+            }
+            
+             if (start == s.length()) {  //empty string, 说明整个s都没有alphanumeric character
+                return true;
+            }
+            
+            //convert all char to lower case
+            if (Character.toLowerCase(s.charAt(start)) != Character.toLowerCase(s.charAt(end))) {
+                break;
+            }else {
+                ++start;
+                --end;
+            }
+
+        }
+        return end <= start;    //不能写return true，结束循环时，strat >= end
+     
+    }
+    
+    private boolean isValid(char c) {
+        return Character.isLetter(c) || Character.isDigit(c);
+    }
+}
+
