@@ -1,0 +1,51 @@
+//Method1: Binary Search, time = O(logn), we need to find the largest number satisfy that n = x / n
+class Solution {
+    public int mySqrt(int x) {
+        if (x < 0) {
+            return -1;
+        }
+        
+        if (x == 0) {
+            return x;
+        }
+        
+        int start = 1, end = x;
+        while (start + 1 < end) {
+            int mid = start + (end - start) / 2;
+            if (mid == x / mid) {
+                return mid;
+            } else if (mid < x / mid) {
+                start = mid;
+            } else {
+                end = mid;
+            }
+        }
+        
+        if (end <= x / end) {
+            return end;
+        }
+        
+        return start;
+    }
+}
+
+
+//Method2: Newton's method: https://en.wikipedia.org/wiki/Newton%27s_method
+//time = O(logn(F(n))), F(n) is the cost of calculating with n-digit precision，所以这道题是O(logn) 
+class Solution {
+    public int mySqrt(int x) {
+        if (x <= 0) {
+            return 0;
+        }
+        
+        if (x <= 3) {
+            return 1;
+        }
+        
+        long r = x;
+        while (r > x / r) {
+            r = (r + x / r) / 2;
+        }
+        return (int) r;
+    }
+}
