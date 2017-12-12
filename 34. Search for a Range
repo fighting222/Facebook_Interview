@@ -1,0 +1,72 @@
+/**题目：
+Given an array of integers sorted in ascending order, find the starting and ending position of a given target value.
+
+Your algorithm's runtime complexity must be in the order of O(log n).
+
+If the target is not found in the array, return [-1, -1].
+
+For example,
+Given [5, 7, 7, 8, 8, 10] and target value 8,
+return [3, 4].
+
+
+*/
+
+
+
+//Binary Search
+//Method1: 写两个Binary Search  time = O(logn)，space = O(1)
+class Solution {
+    public int[] searchRange(int[] nums, int target) {
+        if (nums == null || nums.length == 0) {
+            return new int[] {-1, -1};
+        }
+        
+        int start, end, mid;   //要在下面赋值，不然进行完search left bound，start，end的值已经发生变化
+        int[] bound = new int[2];
+        
+        //search for left bound
+        start = 0; end = nums.length - 1;
+        while (start + 1 < end) {
+            mid = start + (end - start) / 2;
+            if (nums[mid] == target) {
+                end = mid;   //因为我们要找left bound，要找到第一个 = target的数
+            } else if (nums[mid] < target) {
+                start = mid;   
+            } else {
+                end = mid;
+            }
+        }
+        
+        if (nums[start] == target) {
+            bound[0] = start;
+        } else if (nums[end] == target) {
+            bound[0] = end;
+        } else {   //没有 = target的数
+            bound[0] = bound[1] = -1;
+            return bound;
+        }
+        
+        //search for the right bound
+        start = 0; end = nums.length - 1;
+        while (start + 1 < end) {
+            mid = start + (end - start) / 2;
+            if (nums[mid] == target) {
+                start = mid;   //因为要找right bound，最后一个 > target的数
+            } else if (nums[mid] < target) {
+                start = mid;
+            } else {
+                end = mid;
+            }
+        }
+        
+        if (nums[end] == target) {
+            bound[1] = end;
+        } else if (nums[start] == target) {
+            bound[1] = start;
+        } else {
+            bound[0] = bound[1] = -1;
+        }
+        return bound;
+    }
+}
