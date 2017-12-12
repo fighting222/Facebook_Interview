@@ -1,0 +1,90 @@
+/**题目：
+Given a collection of intervals, merge all overlapping intervals.
+
+For example,
+Given [1,3],[2,6],[8,10],[15,18],
+return [1,6],[8,10],[15,18].
+*/
+
+
+
+/**
+ * Definition for an interval.
+ * public class Interval {
+ *     int start;
+ *     int end;
+ *     Interval() { start = 0; end = 0; }
+ *     Interval(int s, int e) { start = s; end = e; }
+ * }
+ */
+//和meeting rooms那两道题很像
+//time complexity = O(nlogn), space = O(1)
+//思路：The idea is to sort the intervals by their starting points. Then, we take the first interval and compare its end with the next intervals starts. As long as they overlap, we update the end to be the max end of the overlapping intervals. Once we find a non overlapping interval, we just add it directly into our result
+class Solution {
+    public List<Interval> merge(List<Interval> intervals) {
+        List<Interval> results = new ArrayList<>();
+        
+        if (intervals == null || intervals.size() == 0) {
+            return results;
+        }
+        
+        //sort intervals by start time, takes O(nlogn)
+        Collections.sort(intervals, new Comparator<Interval>() {
+            public int compare(Interval a, Interval b) {
+                return a.start - b.start;
+            } 
+        });
+        
+        int start = intervals.get(0).start;
+        int end = intervals.get(0).end;
+        for (int i = 1; i < intervals.size(); ++i) {
+          
+            //merge intervals time = O(n)
+            //这里和meeting roomsII不一样，不能是start >= end
+            if (intervals.get(i).start > end) {  //意味着新的interval没有和curtInterval冲突，不需要merge
+                // if the current meeting starts right after 
+                // there's no need for a new room, merge the interval
+                results.add(new Interval(start, end));   //// Disjoint intervals, add the previous one and reset bounds
+                start = intervals.get(i).start;
+                end = intervals.get(i).end;
+            } else {   // Overlapping intervals, move the end if needed
+                end = Math.max(end, intervals.get(i).end);
+            }
+        }
+        // Add the last interval
+        results.add(new Interval(start, end));
+        return results;
+    }
+}
+
+
+//follow up 1: input is unsorted and has some overlapping intervals, output is the total non-overlapping time; O(nlogn) time, O(1) space
+public class Solution {
+    public int totalTime(List<Interval> intervals) {
+        if (intervals == null || intervals.size() <= 1) {//size(), not length !!!
+            return intervals;
+        }
+        Collections.sort(intervals, new Comparator<Interval>(){
+            public int compare(Interval a, Interval b) {
+                return a.start - b.start;
+            }
+        });
+        //you can also merge intervals before calculating,which makes calculation easier,but takes some memory(new arraylist)
+        int total = 0;
+        Interval prev = new Interval(0, 0);
+        for (Interval curr : intervals) {
+            if (prev.end < curr.start) {
+                total += curr.end - curr.start;//add the whole part(non-overlapping)
+                prev = curr;
+            } else if (curr.end > prev.end) {
+                total += curr.end - prev.end;//only add the non overlapping part after prev.end
+                prev = curr;
+            }
+            //else curr.end<=prev.end(curr inside prev),don't calculate anything,and prev isn't updated(prev.end is bigger)
+        }
+        return total;
+    }
+}
+// follow up 2: if the format of intervals are "March, 2014" etc, first convert it to "201403" by "2014" + "03"(hashmap:March->03)
+// or first convert it to 2014 * 12 + 3, if the output is num of months
+// http://www.1point3acres.com/bbs/forum.php?mod=viewthread&tid=160738&fromuid=109727
