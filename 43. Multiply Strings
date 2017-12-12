@@ -1,0 +1,67 @@
+/** 不能从左往右scan String：Working through the digits left to right seems problematic because we don’t know what the place value of the first digit is until we know how long the number is. For example, the first character of "367" is identical to
+that of "31
+*应该从右往左scan string  http://blog.csdn.net/qq_28618765/article/details/72885108    看这个解释图
+
+Start from right to left, perform multiplication on every pair of digits, and add them 
+together. Let's draw the process! From the following draft, we can immediately conclude:
+`num1[i] * num2[j]` will be placed at indices `[i + j`, `i + j + 1]`
+
+index 1             1 2 3    i指向数字2
+index 0               4 5    j指向数字4
+                 ---------
+                      1 5
+                    1 0
+                  0 5
+                  1 2
+index[1,2]      0 8    index[i+j, i+j+1]=[1+0, 1+0+1]=[1,2]
+              0 4
+             ---------
+        index[0 1 2 3 4]
+               p1 p2     p1 = posHigh, p2 = posLow
+<<<-------------- calculate from right to left
+*/
+//要返回String
+/**例子：num1 = 23，num2 = 45，得到的结果最多是4位数。看小本本！！！,第8页
+*/
+
+
+// O(mn) time, O(m+n) space
+class Solution {
+    public String multiply(String num1, String num2) {
+        if (num1.length() == 0 || num2.length() == 0) {
+            return "0";
+        }
+        
+        int len1 = num1.length();
+        int len2 = num2.length();
+        int[] result = new int[len1 + len2];
+        
+        ////把char转换成int数组，为什么要减去一个'0'呢？因为要减去0的ascii码得到的就是实际的数字
+        for (int i = len1 - 1; i >= 0; --i) {   //calculate product from lower digits
+            for (int j = len2 - 1; j >= 0; --j) {
+                int multi = (num1.charAt(i) - '0') * (num2.charAt(j) - '0');
+                //每完成一个位子的乘法之后我们需要填写两个数字，一个是position low，另一个是position hight(看小本本)
+                //calculate the indices where the digits will be
+                int posLow = i + j + 1; //例如：当result是两位数，个位数的index = i + j + 1 = 0 + 0 + 1,因为posLow的位子在posHigh后面
+                int posHigh = i + j;
+                multi += result[posLow]; //当前posLow的结果 = 计算的结果 + 之前posLow的结果  //calculate the sum
+                //例如multi = 23
+                ////满10进位，从后往前满十进位
+                result[posLow] = multi % 10;  //result[posLow] = 23 % 10 = 3   //notice this is =, not +=, cuz it has been added to sum
+                result[posHigh] += multi / 10; //posHigh要加上原来的进位！！！！！！！原来posHigh + 新multi / 10的高位 //add carries to result[posHigh]
+            }
+        }
+        //处理结果
+        StringBuilder sb = new StringBuilder();
+        for (int res : result) {
+//处理leading zero情况，例如0035，如果sb.length() == 0, res == 0,就是前面的两个0，不要加到结果里，从第一个 != 0 的数开始加入sb里面
+            if (!(sb.length() == 0 && res == 0)) {  //skip the zero at front
+                sb.append(res);
+            }
+        }
+        if (sb.length() == 0) { //result全都是0的情况  //corner case like "0","0" -> [0, 0]
+                return "0";
+        }
+        return sb.toString();
+    }
+}
